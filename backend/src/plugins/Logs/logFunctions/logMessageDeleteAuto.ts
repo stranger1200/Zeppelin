@@ -28,7 +28,22 @@ export async function logMessageDeleteAuto(pluginData: GuildPluginData<LogsPlugi
     }
   }
 
-  const { replyInfo, reply } = await getMessageReplyLogInfo(pluginData, data.message);
+  const { originalMessageLink, forwardLink, forwardTimestamp, forwardSummary, reply } =
+    await getMessageReplyLogInfo(pluginData, data.message);
+
+  const poll = data.message.data.poll;
+  const pollAnswers = poll?.answers ?? [];
+  const pollQuestion = poll?.question?.text ?? "";
+  const pollAnswer1 = pollAnswers[0]?.text ?? "";
+  const pollAnswer2 = pollAnswers[1]?.text ?? "";
+  const pollAnswer3 = pollAnswers[2]?.text ?? "";
+  const pollAnswer4 = pollAnswers[3]?.text ?? "";
+  const pollAnswer5 = pollAnswers[4]?.text ?? "";
+  const pollAnswer6 = pollAnswers[5]?.text ?? "";
+  const pollAnswer7 = pollAnswers[6]?.text ?? "";
+  const pollAnswer8 = pollAnswers[7]?.text ?? "";
+  const pollAnswer9 = pollAnswers[8]?.text ?? "";
+  const pollAnswer10 = pollAnswers[9]?.text ?? "";
 
   return log(
     pluginData,
@@ -39,8 +54,22 @@ export async function logMessageDeleteAuto(pluginData: GuildPluginData<LogsPlugi
       user: userToTemplateSafeUser(data.user),
       channel: channelToTemplateSafeChannel(data.channel),
       messageDate: data.messageDate,
-      replyInfo,
+      originalMessageLink,
+      forwardLink,
+      forwardTimestamp,
+      forwardSummary,
       reply,
+      pollQuestion,
+      pollAnswer1,
+      pollAnswer2,
+      pollAnswer3,
+      pollAnswer4,
+      pollAnswer5,
+      pollAnswer6,
+      pollAnswer7,
+      pollAnswer8,
+      pollAnswer9,
+      pollAnswer10,
     }),
     {
       userId: data.user.id,

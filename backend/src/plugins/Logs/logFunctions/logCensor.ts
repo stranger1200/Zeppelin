@@ -14,23 +14,39 @@ import {
 import { LogsPluginType } from "../types.js";
 import { log } from "../util/log.js";
 
+export type CensorSource = "message" | "forward" | "poll";
+
 export interface LogCensorData {
   user: User | UnknownUser;
   channel: GuildTextBasedChannel;
   reason: string;
   message: SavedMessage;
+  source?: CensorSource;
+  /** When censoring forwards or polls, the censored content to display in the log */
+  censoredText?: string;
 }
 
+const CENSOR_LOG_TYPE_BY_SOURCE: Record<CensorSource, "CENSOR" | "CENSOR_FORWARD" | "CENSOR_POLL"> = {
+  message: LogType.CENSOR,
+  forward: LogType.CENSOR_FORWARD,
+  poll: LogType.CENSOR_POLL,
+};
+
 export function logCensor(pluginData: GuildPluginData<LogsPluginType>, data: LogCensorData) {
+  const logType: "CENSOR" | "CENSOR_FORWARD" | "CENSOR_POLL" = data.source
+    ? CENSOR_LOG_TYPE_BY_SOURCE[data.source]
+    : LogType.CENSOR;
   return log(
     pluginData,
-    LogType.CENSOR,
+    logType,
     createTypedTemplateSafeValueContainer({
       user: userToTemplateSafeUser(data.user),
       channel: channelToTemplateSafeChannel(data.channel),
       reason: data.reason,
       message: savedMessageToTemplateSafeSavedMessage(data.message),
-      messageText: disableCodeBlocks(deactivateMentions(data.message.data.content)),
+      messageText: disableCodeBlocks(
+        deactivateMentions(data.censoredText ?? data.message.data.content ?? ""),
+      ),
     }),
     {
       userId: data.user.id,

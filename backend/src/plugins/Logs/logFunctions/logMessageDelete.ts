@@ -14,12 +14,14 @@ import {
 import { TimeAndDatePlugin } from "../../TimeAndDate/TimeAndDatePlugin.js";
 import { LogsPluginType } from "../types.js";
 import { log } from "../util/log.js";
+import { getMessageDeleteLogType } from "../util/getMessageDeleteLogType.js";
 import { getMessageReplyLogInfo } from "../util/getMessageReplyLogInfo.js";
 
 export interface LogMessageDeleteData {
   user: User | UnknownUser;
   channel: GuildTextBasedChannel;
   message: SavedMessage;
+  logType?: "MESSAGE_DELETE" | "MESSAGE_DELETE_POLL" | "MESSAGE_DELETE_FORWARD";
 }
 
 export async function logMessageDelete(pluginData: GuildPluginData<LogsPluginType>, data: LogMessageDeleteData) {
@@ -34,11 +36,28 @@ export async function logMessageDelete(pluginData: GuildPluginData<LogsPluginTyp
   const config = pluginData.config.get();
   const timestampFormat = config.timestamp_format ?? undefined;
 
-  const { replyInfo, reply } = await getMessageReplyLogInfo(pluginData, data.message);
+  const { originalMessageLink, forwardLink, forwardTimestamp, forwardSummary, reply } =
+    await getMessageReplyLogInfo(pluginData, data.message);
+  const logType = data.logType ?? getMessageDeleteLogType(data.message);
+
+  // Extract poll data for conditional display (pollAnswer1-10; use if() to hide null/empty)
+  const poll = data.message.data.poll;
+  const pollAnswers = poll?.answers ?? [];
+  const pollQuestion = poll?.question?.text ?? "";
+  const pollAnswer1 = pollAnswers[0]?.text ?? "";
+  const pollAnswer2 = pollAnswers[1]?.text ?? "";
+  const pollAnswer3 = pollAnswers[2]?.text ?? "";
+  const pollAnswer4 = pollAnswers[3]?.text ?? "";
+  const pollAnswer5 = pollAnswers[4]?.text ?? "";
+  const pollAnswer6 = pollAnswers[5]?.text ?? "";
+  const pollAnswer7 = pollAnswers[6]?.text ?? "";
+  const pollAnswer8 = pollAnswers[7]?.text ?? "";
+  const pollAnswer9 = pollAnswers[8]?.text ?? "";
+  const pollAnswer10 = pollAnswers[9]?.text ?? "";
 
   return log(
     pluginData,
-    LogType.MESSAGE_DELETE,
+    logType,
     createTypedTemplateSafeValueContainer({
       user: userToTemplateSafeUser(data.user),
       channel: channelToTemplateSafeChannel(data.channel),
@@ -48,8 +67,22 @@ export async function logMessageDelete(pluginData: GuildPluginData<LogsPluginTyp
         .getPlugin(TimeAndDatePlugin)
         .inGuildTz(moment.utc(data.message.data.timestamp, "x"))
         .format(timestampFormat),
-      replyInfo,
+      originalMessageLink,
+      forwardLink,
+      forwardTimestamp,
+      forwardSummary,
       reply,
+      pollQuestion,
+      pollAnswer1,
+      pollAnswer2,
+      pollAnswer3,
+      pollAnswer4,
+      pollAnswer5,
+      pollAnswer6,
+      pollAnswer7,
+      pollAnswer8,
+      pollAnswer9,
+      pollAnswer10,
     }),
     {
       userId: data.user.id,

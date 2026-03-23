@@ -134,11 +134,15 @@ export class GuildSavedMessages extends BaseGuildRepository<SavedMessage> {
       };
     }
 
-    if ((msg as Message & { poll?: { question?: { text?: string }; answers?: Iterable<{ text?: string }> } }).poll) {
-      const poll = (msg as Message & { poll: { question?: { text?: string }; answers?: Iterable<{ text?: string }> } }).poll;
+    if ((msg as Message & { poll?: { question?: { text?: string }; answers?: Iterable<{ text?: string }> | { values: () => Iterable<{ text?: string }> } } }).poll) {
+      const poll = (msg as Message & { poll: { question?: { text?: string }; answers?: Iterable<{ text?: string }> | { values: () => Iterable<{ text?: string }> } } }).poll;
+      // poll.answers is a Collection<number, PollAnswer>; use .values() to get PollAnswer objects (Array.from on Collection yields [key, value] pairs)
+      const answersArray = poll.answers && typeof (poll.answers as { values?: () => Iterable<unknown> }).values === "function"
+        ? Array.from((poll.answers as { values: () => Iterable<{ text?: string }> }).values())
+        : [];
       data.poll = {
         question: poll.question ? { text: poll.question.text } : undefined,
-        answers: Array.from(poll.answers ?? []).map((a) => ({ text: a.text })),
+        answers: answersArray.map((a) => ({ text: a.text })),
       } as ISavedMessagePollData;
     }
 

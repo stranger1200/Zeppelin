@@ -1,17 +1,20 @@
 import { GuildTextBasedChannel, Snowflake } from "discord.js";
 import { GuildPluginData } from "vety";
-import { LogType } from "../../../data/LogType.js";
 import { SavedMessage } from "../../../data/entities/SavedMessage.js";
 import { resolveUser } from "../../../utils.js";
+import { getMessageDeleteLogType } from "../../Logs/util/getMessageDeleteLogType.js";
 import { LogsPlugin } from "../../Logs/LogsPlugin.js";
+import type { CensorSource } from "../../Logs/logFunctions/logCensor.js";
 import { CensorPluginType } from "../types.js";
 
 export async function censorMessage(
   pluginData: GuildPluginData<CensorPluginType>,
   savedMessage: SavedMessage,
   reason: string,
+  source?: CensorSource,
+  censoredText?: string,
 ) {
-  pluginData.state.serverLogs.ignoreLog(LogType.MESSAGE_DELETE, savedMessage.id);
+  pluginData.state.serverLogs.ignoreLog(getMessageDeleteLogType(savedMessage), savedMessage.id);
 
   try {
     const resolvedChannel = pluginData.guild.channels.resolve(savedMessage.channel_id as Snowflake);
@@ -28,5 +31,7 @@ export async function censorMessage(
     channel,
     reason,
     message: savedMessage,
+    source,
+    censoredText,
   });
 }

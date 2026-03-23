@@ -6,7 +6,12 @@ import { savedMessageToTemplateSafeSavedMessage, TemplateSafeSavedMessage } from
 import { LogsPluginType } from "../types.js";
 
 export interface MessageReplyLogInfo {
-  replyInfo: string;
+  /** Raw URL to the original message (no formatting) */
+  originalMessageLink: string;
+  /** Forward/reply metadata for custom formatting */
+  forwardLink: string;
+  forwardTimestamp: string;
+  forwardSummary: string;
   reply: TemplateSafeValueContainer | null;
 }
 
@@ -19,16 +24,13 @@ export async function getMessageReplyLogInfo(
 ): Promise<MessageReplyLogInfo> {
   const reference = message.data.reference;
   if (!reference?.messageId || !reference.channelId) {
-    return { replyInfo: "", reply: null };
+    return { originalMessageLink: "", forwardLink: "", forwardTimestamp: "", forwardSummary: "", reply: null };
   }
 
   const isForward = reference.type === MESSAGE_REFERENCE_TYPE_FORWARD;
-  const label = isForward ? "Forwarded From" : "Replied To";
   const link = messageLink(reference.guildId ?? message.guild_id, reference.channelId, reference.messageId);
-  let replyInfo = `\n**${label}:** [Jump to message](${link})`;
-
   let timestamp: string | null = null;
-  let summary: string | null = null;
+  let summary = "";
   let timestampMs: number | null = null;
   let templateSafeMessage: TemplateSafeSavedMessage | null = null;
 
@@ -40,12 +42,8 @@ export async function getMessageReplyLogInfo(
       if (snapshot.timestamp) {
         timestampMs = snapshot.timestamp;
         timestamp = `<t:${Math.floor(timestampMs / 1000)}>`;
-        replyInfo += ` (posted at ${timestamp})`;
       }
       summary = summariseMessageLikeData(snapshot);
-      if (summary) {
-        replyInfo += `\n${summary}`;
-      }
     }
   } else {
     const referencedMessage = await pluginData.state.savedMessages.find(reference.messageId, true);
@@ -58,13 +56,7 @@ export async function getMessageReplyLogInfo(
 
       timestampMs = referencedMessage.data.timestamp;
       timestamp = `<t:${Math.floor(timestampMs / 1000)}>`;
-      replyInfo += ` (posted at ${timestamp})`;
-
       summary = messageSummary(referencedMessage);
-      if (summary) {
-        replyInfo += `\n${summary}`;
-      }
-
       templateSafeMessage = savedMessageToTemplateSafeSavedMessage(referencedMessage);
     }
   }
@@ -77,5 +69,11 @@ export async function getMessageReplyLogInfo(
     message: templateSafeMessage,
   });
 
-  return { replyInfo, reply };
+  return {
+    originalMessageLink: link,
+    forwardLink: isForward ? link : "",
+    forwardTimestamp: isForward ? (timestamp ?? "") : "",
+    forwardSummary: isForward ? summary : "",
+    reply,
+  };
 }

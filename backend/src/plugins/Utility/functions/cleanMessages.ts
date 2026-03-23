@@ -5,6 +5,7 @@ import { LogType } from "../../../data/LogType.js";
 import { getBaseUrl } from "../../../pluginUtils.js";
 import { chunkArray } from "../../../utils.js";
 import { LogsPlugin } from "../../Logs/LogsPlugin.js";
+import { getMessageDeleteLogType } from "../../Logs/util/getMessageDeleteLogType.js";
 import { UtilityPluginType } from "../types.js";
 
 export async function cleanMessages(
@@ -13,7 +14,7 @@ export async function cleanMessages(
   savedMessages: SavedMessage[],
   mod: User,
 ) {
-  pluginData.state.logs.ignoreLog(LogType.MESSAGE_DELETE, savedMessages[0].id);
+  pluginData.state.logs.ignoreLog(getMessageDeleteLogType(savedMessages[0]), savedMessages[0].id);
   pluginData.state.logs.ignoreLog(LogType.MESSAGE_DELETE_BULK, savedMessages[0].id);
 
   // Delete & archive in ID order
@@ -21,7 +22,7 @@ export async function cleanMessages(
   const idsToDelete = savedMessages.map((m) => m.id) as Snowflake[];
 
   // Make sure the deletions aren't double logged
-  idsToDelete.forEach((id) => pluginData.state.logs.ignoreLog(LogType.MESSAGE_DELETE, id));
+  savedMessages.forEach((m) => pluginData.state.logs.ignoreLog(getMessageDeleteLogType(m), m.id));
   pluginData.state.logs.ignoreLog(LogType.MESSAGE_DELETE_BULK, idsToDelete[0]);
 
   // Actually delete the messages (in chunks of 100)

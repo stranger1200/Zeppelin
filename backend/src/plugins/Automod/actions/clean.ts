@@ -1,7 +1,7 @@
 import { GuildTextBasedChannel, Snowflake } from "discord.js";
 import { z } from "zod";
-import { LogType } from "../../../data/LogType.js";
 import { noop } from "../../../utils.js";
+import { MESSAGE_DELETE_LOG_TYPES } from "../../Logs/util/getMessageDeleteLogType.js";
 import { automodAction } from "../helpers.js";
 
 export const CleanAction = automodAction({
@@ -28,7 +28,9 @@ export const CleanAction = automodAction({
 
     for (const [channelId, messageIds] of messageIdsToDeleteByChannelId.entries()) {
       for (const id of messageIds) {
-        pluginData.state.logs.ignoreLog(LogType.MESSAGE_DELETE, id);
+        for (const logType of MESSAGE_DELETE_LOG_TYPES) {
+          pluginData.state.logs.ignoreLog(logType, id);
+        }
       }
 
       const channel = pluginData.guild.channels.cache.get(channelId as Snowflake) as GuildTextBasedChannel;

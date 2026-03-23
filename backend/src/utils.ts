@@ -1342,6 +1342,7 @@ export function summariseMessageLikeData(
 }
 
 export function messageSummary(msg: SavedMessage) {
+  // Only include the top-level message content (forwards can't have their own text; forwarded content is shown via originalMessageLink)
   let result = summariseMessageLikeData(msg.data);
 
   if (msg.data.poll) {
@@ -1349,15 +1350,6 @@ export function messageSummary(msg: SavedMessage) {
     const question = poll.question?.text ?? "?";
     const answers = (poll.answers ?? []).map((a, i) => `  ${i + 1}. ${a.text ?? ""}`).join("\n");
     result += `Poll:\n**Question:** ${question}\n**Answers:**\n${answers || "  (none)"}\n`;
-  }
-
-  if (msg.data.message_snapshots?.length) {
-    for (const snapshot of msg.data.message_snapshots) {
-      const m = snapshot.message;
-      if (m) {
-        result += "\n**Forwarded:**\n" + summariseMessageLikeData(m);
-      }
-    }
   }
 
   return result;

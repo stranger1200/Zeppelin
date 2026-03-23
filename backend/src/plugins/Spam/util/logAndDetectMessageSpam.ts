@@ -3,13 +3,13 @@ import { GuildPluginData } from "vety";
 import moment from "moment-timezone";
 import { ERRORS, RecoverablePluginError } from "../../../RecoverablePluginError.js";
 import { CaseTypes } from "../../../data/CaseTypes.js";
-import { LogType } from "../../../data/LogType.js";
 import { SavedMessage } from "../../../data/entities/SavedMessage.js";
 import { logger } from "../../../logger.js";
 import { CasesPlugin } from "../../../plugins/Cases/CasesPlugin.js";
 import { MutesPlugin } from "../../../plugins/Mutes/MutesPlugin.js";
 import { MuteResult } from "../../../plugins/Mutes/types.js";
 import { DBDateFormat, convertDelayStringToMS, noop, resolveMember, trimLines } from "../../../utils.js";
+import { getMessageDeleteLogType } from "../../Logs/util/getMessageDeleteLogType.js";
 import { LogsPlugin } from "../../Logs/LogsPlugin.js";
 import { RecentActionType, SpamPluginType, TBaseSingleSpamConfig } from "../types.js";
 import { addRecentAction } from "./addRecentAction.js";
@@ -118,7 +118,9 @@ export async function logAndDetectMessageSpam(
 
         // Then, if enabled, remove the spam messages
         if (spamConfig.clean !== false) {
-          msgIds.forEach((id) => pluginData.state.logs.ignoreLog(LogType.MESSAGE_DELETE, id));
+          [...savedMessages, ...additionalMessages].forEach((m) =>
+            pluginData.state.logs.ignoreLog(getMessageDeleteLogType(m), m.id),
+          );
           (pluginData.guild.channels.cache.get(savedMessage.channel_id as Snowflake)! as TextChannel | undefined)
             ?.bulkDelete(msgIds as Snowflake[])
             .catch(noop);

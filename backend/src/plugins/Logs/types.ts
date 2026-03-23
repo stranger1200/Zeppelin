@@ -61,7 +61,14 @@ export type TLogChannel = z.infer<typeof zLogChannel>;
 const zLogChannelMap = z.record(zSnowflake, zLogChannel);
 export type TLogChannelMap = z.infer<typeof zLogChannelMap>;
 
-export const zLogsConfig = z.strictObject({
+export const zLogsConfig: z.ZodType<{
+  channels: z.infer<typeof zLogChannelMap>;
+  format: Partial<z.infer<typeof zLogFormats>>;
+  ping_user: boolean;
+  allow_user_mentions: boolean;
+  timestamp_format: string | null;
+  include_embed_timestamp: boolean;
+}> = z.strictObject({
   channels: zLogChannelMap.default({}),
   format: zLogFormats.partial().default({}),
   // Legacy/deprecated, if below is false mentions wont actually ping. In case you really want the old behavior, set below to true
@@ -241,8 +248,70 @@ export const LogTypeData = z.object({
     messageDate: z.string(),
     message: z.instanceof(TemplateSafeSavedMessage),
     messageSummaryText: z.string(),
-    replyInfo: z.string(),
+    originalMessageLink: z.string(),
+    forwardLink: z.string(),
+    forwardTimestamp: z.string(),
+    forwardSummary: z.string(),
     reply: z.instanceof(TemplateSafeValueContainer).nullable(),
+    pollQuestion: z.string(),
+    pollAnswer1: z.string(),
+    pollAnswer2: z.string(),
+    pollAnswer3: z.string(),
+    pollAnswer4: z.string(),
+    pollAnswer5: z.string(),
+    pollAnswer6: z.string(),
+    pollAnswer7: z.string(),
+    pollAnswer8: z.string(),
+    pollAnswer9: z.string(),
+    pollAnswer10: z.string(),
+  }),
+
+  [LogType.MESSAGE_DELETE_POLL]: z.object({
+    user: z.instanceof(TemplateSafeUser),
+    channel: z.instanceof(TemplateSafeChannel),
+    messageDate: z.string(),
+    message: z.instanceof(TemplateSafeSavedMessage),
+    messageSummaryText: z.string(),
+    originalMessageLink: z.string(),
+    forwardLink: z.string(),
+    forwardTimestamp: z.string(),
+    forwardSummary: z.string(),
+    reply: z.instanceof(TemplateSafeValueContainer).nullable(),
+    pollQuestion: z.string(),
+    pollAnswer1: z.string(),
+    pollAnswer2: z.string(),
+    pollAnswer3: z.string(),
+    pollAnswer4: z.string(),
+    pollAnswer5: z.string(),
+    pollAnswer6: z.string(),
+    pollAnswer7: z.string(),
+    pollAnswer8: z.string(),
+    pollAnswer9: z.string(),
+    pollAnswer10: z.string(),
+  }),
+
+  [LogType.MESSAGE_DELETE_FORWARD]: z.object({
+    user: z.instanceof(TemplateSafeUser),
+    channel: z.instanceof(TemplateSafeChannel),
+    messageDate: z.string(),
+    message: z.instanceof(TemplateSafeSavedMessage),
+    messageSummaryText: z.string(),
+    originalMessageLink: z.string(),
+    forwardLink: z.string(),
+    forwardTimestamp: z.string(),
+    forwardSummary: z.string(),
+    reply: z.instanceof(TemplateSafeValueContainer).nullable(),
+    pollQuestion: z.string(),
+    pollAnswer1: z.string(),
+    pollAnswer2: z.string(),
+    pollAnswer3: z.string(),
+    pollAnswer4: z.string(),
+    pollAnswer5: z.string(),
+    pollAnswer6: z.string(),
+    pollAnswer7: z.string(),
+    pollAnswer8: z.string(),
+    pollAnswer9: z.string(),
+    pollAnswer10: z.string(),
   }),
 
   [LogType.MESSAGE_DELETE_BULK]: z.object({
@@ -328,6 +397,22 @@ export const LogTypeData = z.object({
   }),
 
   [LogType.CENSOR]: z.object({
+    user: z.instanceof(TemplateSafeUser),
+    channel: z.instanceof(TemplateSafeChannel),
+    reason: z.string(),
+    message: z.instanceof(TemplateSafeSavedMessage),
+    messageText: z.string(),
+  }),
+
+  [LogType.CENSOR_FORWARD]: z.object({
+    user: z.instanceof(TemplateSafeUser),
+    channel: z.instanceof(TemplateSafeChannel),
+    reason: z.string(),
+    message: z.instanceof(TemplateSafeSavedMessage),
+    messageText: z.string(),
+  }),
+
+  [LogType.CENSOR_POLL]: z.object({
     user: z.instanceof(TemplateSafeUser),
     channel: z.instanceof(TemplateSafeChannel),
     reason: z.string(),
@@ -494,8 +579,22 @@ export const LogTypeData = z.object({
     user: z.instanceof(TemplateSafeUser),
     channel: z.instanceof(TemplateSafeChannel),
     messageDate: z.string(),
-    replyInfo: z.string(),
+    originalMessageLink: z.string(),
+    forwardLink: z.string(),
+    forwardTimestamp: z.string(),
+    forwardSummary: z.string(),
     reply: z.instanceof(TemplateSafeValueContainer).nullable(),
+    pollQuestion: z.string(),
+    pollAnswer1: z.string(),
+    pollAnswer2: z.string(),
+    pollAnswer3: z.string(),
+    pollAnswer4: z.string(),
+    pollAnswer5: z.string(),
+    pollAnswer6: z.string(),
+    pollAnswer7: z.string(),
+    pollAnswer8: z.string(),
+    pollAnswer9: z.string(),
+    pollAnswer10: z.string(),
   }),
 
   [LogType.SET_ANTIRAID_USER]: z.object({

@@ -1,10 +1,10 @@
 import { PermissionsBitField, Snowflake } from "discord.js";
 import { GuildPluginData } from "vety";
 import moment from "moment-timezone";
-import { LogType } from "../../../data/LogType.js";
 import { logger } from "../../../logger.js";
 import { resolveUser, verboseChannelMention } from "../../../utils.js";
 import { hasDiscordPermissions } from "../../../utils/hasDiscordPermissions.js";
+import { getMessageDeleteLogType } from "../../Logs/util/getMessageDeleteLogType.js";
 import { LogsPlugin } from "../../Logs/LogsPlugin.js";
 import { TimeAndDatePlugin } from "../../TimeAndDate/TimeAndDatePlugin.js";
 import { AutoDeletePluginType } from "../types.js";
@@ -45,7 +45,7 @@ export async function deleteNextItem(pluginData: GuildPluginData<AutoDeletePlugi
 
   const timeAndDate = pluginData.getPlugin(TimeAndDatePlugin);
 
-  pluginData.state.guildLogs.ignoreLog(LogType.MESSAGE_DELETE, itemToDelete.message.id);
+  pluginData.state.guildLogs.ignoreLog(getMessageDeleteLogType(itemToDelete.message), itemToDelete.message.id);
   channel.messages.delete(itemToDelete.message.id as Snowflake).catch((err) => {
     if (err.code === 10008) {
       // "Unknown Message", probably already deleted by automod or another bot, ignore

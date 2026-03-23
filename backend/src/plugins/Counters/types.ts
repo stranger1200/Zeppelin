@@ -13,7 +13,7 @@ import { CommonPlugin } from "../Common/CommonPlugin.js";
 import Timeout = NodeJS.Timeout;
 
 const MAX_COUNTERS = 999;
-const MAX_TRIGGERS_PER_COUNTER = 5;
+const MAX_TRIGGERS_PER_COUNTER = 999;
 
 export const zTrigger = z.strictObject({
   // Dummy type because name gets replaced by the property key in transform()

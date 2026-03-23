@@ -18,7 +18,7 @@ export const DisableAutoReactionsCmd = autoReactionsCmd({
     }
 
     await pluginData.state.autoReactions.removeFromChannel(args.channelId);
-    pluginData.state.cache.delete(args.channelId);
+    pluginData.state.cache.clear();
     void pluginData.state.common.sendSuccessMessage(msg, `Auto-reactions disabled in <#${args.channelId}>`);
   },
 });

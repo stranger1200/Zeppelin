@@ -1,4 +1,5 @@
 import {
+  ChannelType,
   escapeCodeBlock,
   escapeInlineCode,
   GuildChannel,
@@ -27,6 +28,7 @@ import {
 } from "./utils.js";
 import { isValidTimezone } from "./utils/isValidTimezone.js";
 import { MessageTarget, resolveMessageTarget } from "./utils/resolveMessageTarget.js";
+import { getChannelId } from "vety/helpers";
 
 export const commandTypes = {
   ...messageCommandBaseTypeConverters,
@@ -115,6 +117,43 @@ export const commandTypes = {
   guildTextBasedChannel(value: string, context: CommandContext<any>) {
     return messageCommandBaseTypeConverters.textChannel(value, context);
   },
+
+  /**
+   * Resolves a channel for auto-reactions. Accepts text channels, news channels, forum channels,
+   * and threads (unlike guildTextBasedChannel which only accepts text channels).
+   */
+  autoReactionsChannel(value: string, context: CommandContext<any>): GuildTextBasedChannel {
+    const guild = context.message.guild;
+    if (!guild) {
+      throw new TypeConversionError("Cannot resolve channel outside of a guild");
+    }
+    const channelId =
+      getChannelId(value) ??
+      (channelMentionRegex.exec(value)?.[1] as Snowflake | undefined) ??
+      (isValidSnowflake(value) ? (value as Snowflake) : null);
+    let channel = channelId ? guild.channels.cache.get(channelId) : null;
+    if (!channel && value) {
+      const searchName = value.toLowerCase().replace(/^#/, "");
+      channel =
+        guild.channels.cache.find(
+          (ch) => ch.name.toLowerCase() === searchName || ch.name.toLowerCase().replace(/-/g, " ") === searchName,
+        ) ?? null;
+    }
+    if (!channel) {
+      throw new TypeConversionError(`Channel \`${escapeInlineCode(value)}\` was not found`);
+    }
+    const isAutoReactionsChannel =
+      channel.type === ChannelType.GuildText ||
+      channel.type === ChannelType.GuildNews ||
+      channel.type === ChannelType.GuildForum ||
+      channel.isThread?.();
+    if (!isAutoReactionsChannel) {
+      throw new TypeConversionError(
+        `Channel \`${escapeInlineCode(value)}\` is not a text channel, forum channel, or thread`,
+      );
+    }
+    return channel as GuildTextBasedChannel;
+  },
 };
 
 export const commandTypeHelpers = {
@@ -129,4 +168,5 @@ export const commandTypeHelpers = {
   regex: createTypeHelper<RegExp>(commandTypes.regex),
   timezone: createTypeHelper<string>(commandTypes.timezone),
   guildTextBasedChannel: createTypeHelper<GuildTextBasedChannel>(commandTypes.guildTextBasedChannel),
+  autoReactionsChannel: createTypeHelper<GuildTextBasedChannel>(commandTypes.autoReactionsChannel),
 };

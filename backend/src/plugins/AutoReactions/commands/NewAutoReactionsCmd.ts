@@ -14,7 +14,7 @@ export const NewAutoReactionsCmd = autoReactionsCmd({
   usage: "!auto_reactions 629990160477585428 👍 👎",
 
   signature: {
-    channel: ct.guildTextBasedChannel(),
+    channel: ct.autoReactionsChannel(),
     reactions: ct.string({ rest: true }),
   },
 
@@ -60,7 +60,7 @@ export const NewAutoReactionsCmd = autoReactionsCmd({
     }
 
     await pluginData.state.autoReactions.set(args.channel.id, finalReactions);
-    pluginData.state.cache.delete(args.channel.id);
+    pluginData.state.cache.clear();
     void pluginData.state.common.sendSuccessMessage(msg, `Auto-reactions set for <#${args.channel.id}>`);
   },
 });

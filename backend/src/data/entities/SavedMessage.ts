@@ -65,11 +65,20 @@ export interface ISavedMessageStickerData {
   type: StickerType | null;
 }
 
+/** Minimal sticker data for snapshot (id + format/format_type for CDN URL) */
+export interface ISnapshotStickerItem {
+  id: Snowflake;
+  /** StickerFormatType: PNG=1, APNG=2, Lottie=3, GIF=4 */
+  format_type?: number;
+}
+
 /** Content of a forwarded message snapshot */
 export interface IMessageSnapshotMessageData {
   content?: string | null;
   embeds?: ISavedMessageEmbedData[];
   attachments?: ISavedMessageAttachmentData[];
+  stickers?: ISnapshotStickerItem[];
+  poll?: ISavedMessagePollData;
   timestamp?: number;
 }
 

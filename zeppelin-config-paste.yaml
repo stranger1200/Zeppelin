@@ -135,7 +135,6 @@ plugins:
         MEMBER_NOTE: "{timestamp} 🖊 Note on {userMention(user)} by {userMention(mod)}"
         MESSAGE_DELETE: "{timestamp} 🗑 Message from {userMention(user)} deleted in {channelMention(channel)}:{messageSummaryText}{if(emoteLinks, concat(\"\n\", \"Emotes:\", \"\n\", emoteLinks), \"\")}{originalMessageLink}"
         MESSAGE_DELETE_POLL: "{timestamp} 🗑 Poll from {userMention(user)} deleted in {channelMention(channel)} (originally posted at **{messageDate}**):\nPoll title: `{pollQuestion}`{pollAnswers}"
-        MESSAGE_DELETE_FORWARD: "{timestamp} 🗑 Message from {userMention(user)} deleted in {channelMention(channel)}:{forwardSummary}{if(emoteLinks, concat(\"\n\", \"Emotes:\", \"\n\", emoteLinks), \"\")}{originalMessageLink}"
         MESSAGE_EDIT: "{timestamp} ✏ {userMention(user)} edited in {channelMention(channel)}: **Before:**{messageSummary(before)} **After:**{messageSummary(after)}"
         CHANNEL_CREATE: "{timestamp} 🖊 Channel {channelMention(channel)} was created"
         CHANNEL_DELETE: "{timestamp} 🗑 Channel {channelMention(channel)} was deleted"

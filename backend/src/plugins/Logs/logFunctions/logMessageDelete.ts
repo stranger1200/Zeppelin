@@ -4,7 +4,13 @@ import moment from "moment-timezone";
 import { LogType } from "../../../data/LogType.js";
 import { ISavedMessageAttachmentData, SavedMessage } from "../../../data/entities/SavedMessage.js";
 import { createTypedTemplateSafeValueContainer } from "../../../templateFormatter.js";
-import { getCustomEmojiUrlsInMessage, messageSummary, UnknownUser, useMediaUrls } from "../../../utils.js";
+import {
+  getCustomEmojiUrlsInMessage,
+  getStickerUrlsFromMessage,
+  messageSummary,
+  UnknownUser,
+  useMediaUrls,
+} from "../../../utils.js";
 import { resolveChannelIds } from "../../../utils/resolveChannelIds.js";
 import {
   channelToTemplateSafeChannel,
@@ -21,7 +27,7 @@ export interface LogMessageDeleteData {
   user: User | UnknownUser;
   channel: GuildTextBasedChannel;
   message: SavedMessage;
-  logType?: "MESSAGE_DELETE" | "MESSAGE_DELETE_POLL" | "MESSAGE_DELETE_FORWARD";
+  logType?: "MESSAGE_DELETE" | "MESSAGE_DELETE_POLL" | "MESSAGE_DELETE_STICKER";
 }
 
 export async function logMessageDelete(pluginData: GuildPluginData<LogsPluginType>, data: LogMessageDeleteData) {
@@ -40,17 +46,31 @@ export async function logMessageDelete(pluginData: GuildPluginData<LogsPluginTyp
     await getMessageReplyLogInfo(pluginData, data.message);
   const logType = data.logType ?? getMessageDeleteLogType(data.message);
 
-  const poll = data.message.data.poll;
+  const snapshot = data.message.data.message_snapshots?.[0]?.message as
+    | { poll?: { question?: { text?: string }; answers?: Array<{ text?: string }> } }
+    | undefined;
+  const poll = data.message.data.poll ?? snapshot?.poll;
   const pollQuestion = poll?.question?.text ?? "";
   const maxEmoteLinks = config.max_emote_links ?? 10;
   const emoteLinkSeparator = config.emote_link_separator ?? "";
+  const stickerLinkSeparator = config.sticker_link_separator ?? " ";
   const pollAnswerSeparator = config.poll_answer_separator ?? ", ";
   const pollAnswerFormat = config.poll_answer_format ?? "Answer {n}: `{text}`";
   const pollAnswerPrefix = config.poll_answer_prefix ?? ", ";
+  const originalMessageLinkFormat = config.original_message_link_format ?? "\nOriginal message: {link}";
+
+  const isForward = forwardLink.length > 0;
+  const originalMessageLinkFormatted =
+    isForward && originalMessageLink
+      ? originalMessageLinkFormat.replace(/\{link\}/g, originalMessageLink)
+      : "";
 
   const emoteUrls = getCustomEmojiUrlsInMessage(data.message).slice(0, maxEmoteLinks);
   const wrap = (url: string) => (url ? `<${url}>` : "");
   const emoteLinks = emoteUrls.map(wrap).join(emoteLinkSeparator);
+
+  const stickerUrls = getStickerUrlsFromMessage(data.message);
+  const stickerLinks = stickerUrls.map((url) => `<${url}>`).join(stickerLinkSeparator);
 
   const pollAnswersArr = Array.from(poll?.answers ?? [], (a) => a?.text ?? "").filter((t) => t !== "");
   const pollAnswersJoined = pollAnswersArr
@@ -60,6 +80,8 @@ export async function logMessageDelete(pluginData: GuildPluginData<LogsPluginTyp
     .join(pollAnswerSeparator);
   const pollAnswersFormatted = pollAnswersArr.length ? pollAnswerPrefix + pollAnswersJoined : "";
 
+  const isStickerLogType = logType === LogType.MESSAGE_DELETE_STICKER;
+
   return log(
     pluginData,
     logType,
@@ -67,12 +89,16 @@ export async function logMessageDelete(pluginData: GuildPluginData<LogsPluginTyp
       user: userToTemplateSafeUser(data.user),
       channel: channelToTemplateSafeChannel(data.channel),
       message: savedMessageToTemplateSafeSavedMessage(data.message),
-      messageSummaryText: messageSummary(data.message),
+      messageSummaryText: isStickerLogType
+        ? ""
+        : isForward
+          ? forwardSummary
+          : messageSummary(data.message),
       messageDate: pluginData
         .getPlugin(TimeAndDatePlugin)
         .inGuildTz(moment.utc(data.message.data.timestamp, "x"))
         .format(timestampFormat),
-      originalMessageLink,
+      originalMessageLink: originalMessageLinkFormatted,
       forwardLink,
       forwardTimestamp,
       forwardSummary,
@@ -80,6 +106,7 @@ export async function logMessageDelete(pluginData: GuildPluginData<LogsPluginTyp
       pollQuestion,
       emoteLinks,
       pollAnswers: pollAnswersFormatted,
+      stickerLinks,
     }),
     {
       userId: data.user.id,

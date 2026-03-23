@@ -158,14 +158,19 @@ export class GuildSavedMessages extends BaseGuildRepository<SavedMessage> {
   }
 
   protected snapshotToSavedData(snapshotMessage: unknown): IMessageSnapshotData {
-    const msg = snapshotMessage as {
+    type SnapshotMsg = {
       content?: string | null;
-      embeds?: Array<{ title?: string; description?: string; fields?: Array<{ name: string; value: string }> }> | { values: () => Iterable<unknown> };
-      attachments?: Array<{ url?: string; name?: string; id?: string }> | { values: () => Iterable<{ url?: string; name?: string; id?: string }> };
+      embeds?: unknown;
+      attachments?: unknown;
+      sticker_items?: Array<{ id: string; name?: string; format_type?: number }>;
+      stickers?: Array<{ id: string; format_type?: number; format?: number }>;
+      poll?: { question?: { text?: string }; answers?: Array<{ text?: string }> | { values: () => Iterable<{ text?: string }> } };
       timestamp?: number;
-    } | null;
-    if (!msg) return {};
+    };
+    const raw = snapshotMessage as { message?: SnapshotMsg } & SnapshotMsg | null;
+    if (!raw) return {};
 
+    const msg = raw.message ?? raw;
     const toArray = <T>(x: unknown): T[] =>
       !x ? [] : Array.isArray(x) ? (x as T[]) : typeof (x as { values?: () => Iterable<T> }).values === "function" ? Array.from((x as { values: () => Iterable<T> }).values()) : [];
 
@@ -197,6 +202,26 @@ export class GuildSavedMessages extends BaseGuildRepository<SavedMessage> {
         url: a.url ?? "",
         width: null,
       }));
+    }
+
+    const stickerItems = toArray(msg.sticker_items ?? msg.stickers) as Array<{ id: string; format_type?: number; format?: number }>;
+    if (stickerItems.length) {
+      data.stickers = stickerItems.map((s) => ({
+        id: s.id,
+        format_type: s.format_type ?? s.format ?? 1,
+      }));
+    }
+
+    const rawPoll = msg.poll as { question?: { text?: string }; answers?: Array<{ text?: string }> | { values: () => Iterable<{ text?: string }> } } | undefined;
+    if (rawPoll) {
+      const answersArray =
+        rawPoll.answers && typeof (rawPoll.answers as { values?: () => Iterable<unknown> }).values === "function"
+          ? Array.from((rawPoll.answers as { values: () => Iterable<{ text?: string }> }).values())
+          : (rawPoll.answers ?? []) as Array<{ text?: string }>;
+      data.poll = {
+        question: rawPoll.question ? { text: rawPoll.question.text } : undefined,
+        answers: answersArray.map((a) => ({ text: a.text })),
+      };
     }
 
     return { message: data };

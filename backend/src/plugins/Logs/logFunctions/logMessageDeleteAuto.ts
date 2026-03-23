@@ -3,7 +3,13 @@ import { GuildPluginData } from "vety";
 import { LogType } from "../../../data/LogType.js";
 import { ISavedMessageAttachmentData, SavedMessage } from "../../../data/entities/SavedMessage.js";
 import { createTypedTemplateSafeValueContainer } from "../../../templateFormatter.js";
-import { getCustomEmojiUrlsInMessage, messageSummary, UnknownUser, useMediaUrls } from "../../../utils.js";
+import {
+  getCustomEmojiUrlsInMessage,
+  getStickerUrlsFromMessage,
+  messageSummary,
+  UnknownUser,
+  useMediaUrls,
+} from "../../../utils.js";
 import { resolveChannelIds } from "../../../utils/resolveChannelIds.js";
 import {
   channelToTemplateSafeChannel,
@@ -34,15 +40,29 @@ export async function logMessageDeleteAuto(pluginData: GuildPluginData<LogsPlugi
   const config = pluginData.config.get();
   const maxEmoteLinks = config.max_emote_links ?? 10;
   const emoteLinkSeparator = config.emote_link_separator ?? "";
+  const stickerLinkSeparator = config.sticker_link_separator ?? " ";
+  const originalMessageLinkFormat = config.original_message_link_format ?? "\nOriginal message: {link}";
   const pollAnswerSeparator = config.poll_answer_separator ?? ", ";
+
+  const isForward = forwardLink.length > 0;
+  const originalMessageLinkFormatted =
+    isForward && originalMessageLink
+      ? originalMessageLinkFormat.replace(/\{link\}/g, originalMessageLink)
+      : "";
   const pollAnswerFormat = config.poll_answer_format ?? "Answer {n}: `{text}`";
   const pollAnswerPrefix = config.poll_answer_prefix ?? ", ";
-  const poll = data.message.data.poll;
+  const snapshot = data.message.data.message_snapshots?.[0]?.message as
+    | { poll?: { question?: { text?: string }; answers?: Array<{ text?: string }> } }
+    | undefined;
+  const poll = data.message.data.poll ?? snapshot?.poll;
   const pollQuestion = poll?.question?.text ?? "";
 
   const emoteUrls = getCustomEmojiUrlsInMessage(data.message).slice(0, maxEmoteLinks);
   const wrap = (url: string) => (url ? `<${url}>` : "");
   const emoteLinks = emoteUrls.map(wrap).join(emoteLinkSeparator);
+
+  const stickerUrls = getStickerUrlsFromMessage(data.message);
+  const stickerLinks = stickerUrls.map((url) => `<${url}>`).join(stickerLinkSeparator);
 
   const pollAnswersArr = Array.from(poll?.answers ?? [], (a) => a?.text ?? "").filter((t) => t !== "");
   const pollAnswersJoined = pollAnswersArr
@@ -57,11 +77,11 @@ export async function logMessageDeleteAuto(pluginData: GuildPluginData<LogsPlugi
     LogType.MESSAGE_DELETE_AUTO,
     createTypedTemplateSafeValueContainer({
       message: savedMessageToTemplateSafeSavedMessage(data.message),
-      messageSummaryText: messageSummary(data.message),
+      messageSummaryText: isForward ? forwardSummary : messageSummary(data.message),
       user: userToTemplateSafeUser(data.user),
       channel: channelToTemplateSafeChannel(data.channel),
       messageDate: data.messageDate,
-      originalMessageLink,
+      originalMessageLink: originalMessageLinkFormatted,
       forwardLink,
       forwardTimestamp,
       forwardSummary,
@@ -69,6 +89,7 @@ export async function logMessageDeleteAuto(pluginData: GuildPluginData<LogsPlugi
       pollQuestion,
       emoteLinks,
       pollAnswers: pollAnswersFormatted,
+      stickerLinks,
     }),
     {
       userId: data.user.id,

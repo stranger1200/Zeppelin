@@ -28,6 +28,7 @@ import {
   RoleResolvable,
   SendableChannels,
   Sticker,
+  StickerFormatType,
   User,
 } from "discord.js";
 import emojiRegex from "emoji-regex";
@@ -702,6 +703,34 @@ export function getCustomEmojiUrlsInMessage(msg: SavedMessage): string[] {
     if (snap.message) scanData(snap.message);
   }
   return collected;
+}
+
+/** Returns Discord CDN URLs for stickers in a message. Use with <> wrapping to avoid embedding. Includes stickers from forwards (snapshot). */
+export function getStickerUrlsFromMessage(msg: SavedMessage): string[] {
+  const topLevel = msg.data.stickers ?? [];
+  const snapshot = msg.data.message_snapshots?.[0]?.message as
+    | { stickers?: Array<{ id: string; format_type?: number }> }
+    | undefined;
+  const snapshotStickers = snapshot?.stickers ?? [];
+
+  const stickers =
+    topLevel.length > 0
+      ? topLevel.map((s) => ({ id: s.id, format: s.format }))
+      : snapshotStickers.map((s) => ({
+          id: s.id,
+          format: (s.format_type ?? 1) as StickerFormatType,
+        }));
+
+  const baseUrl = "https://cdn.discordapp.com/stickers";
+  return stickers.map((sticker) => {
+    const ext =
+      sticker.format === StickerFormatType.Lottie
+        ? "json"
+        : sticker.format === StickerFormatType.GIF
+          ? "gif"
+          : "png";
+    return `${baseUrl}/${sticker.id}.${ext}`;
+  });
 }
 
 export function isEmoji(str: string): boolean {

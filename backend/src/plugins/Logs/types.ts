@@ -73,6 +73,8 @@ export const zLogsConfig: z.ZodType<{
   poll_answer_separator: string;
   poll_answer_format: string;
   poll_answer_prefix: string;
+  sticker_link_separator: string;
+  original_message_link_format: string;
 }> = z.strictObject({
   channels: zLogChannelMap.default({}),
   format: zLogFormats.partial().default({}),
@@ -91,6 +93,10 @@ export const zLogsConfig: z.ZodType<{
   poll_answer_format: z.string().default("Answer {n}: `{text}`"),
   /** Text before {pollAnswers} when there are answers. Default ", " so it reads "Poll title: `Q`, Answer 1: ..." */
   poll_answer_prefix: z.string().default(", "),
+  /** Separator between sticker links in {stickerLinks}. Default " ". Use "\n" for newlines. */
+  sticker_link_separator: z.string().default(" "),
+  /** Format for "Original message: link" shown at end of message delete logs. Only used when the deleted message is a forward. {link} = URL. Default "\nOriginal message: {link}". Set to "" to hide. */
+  original_message_link_format: z.string().default("\nOriginal message: {link}"),
 });
 
 // Hacky way of allowing a """null""" default value for config.format.timestamp due to legacy io-ts reasons
@@ -271,6 +277,7 @@ export const LogTypeData = z.object({
     pollQuestion: z.string(),
     emoteLinks: z.string(),
     pollAnswers: z.string(),
+    stickerLinks: z.string(),
   }),
 
   [LogType.MESSAGE_DELETE_POLL]: z.object({
@@ -287,9 +294,10 @@ export const LogTypeData = z.object({
     pollQuestion: z.string(),
     emoteLinks: z.string(),
     pollAnswers: z.string(),
+    stickerLinks: z.string(),
   }),
 
-  [LogType.MESSAGE_DELETE_FORWARD]: z.object({
+  [LogType.MESSAGE_DELETE_STICKER]: z.object({
     user: z.instanceof(TemplateSafeUser),
     channel: z.instanceof(TemplateSafeChannel),
     messageDate: z.string(),
@@ -303,6 +311,7 @@ export const LogTypeData = z.object({
     pollQuestion: z.string(),
     emoteLinks: z.string(),
     pollAnswers: z.string(),
+    stickerLinks: z.string(),
   }),
 
   [LogType.MESSAGE_DELETE_BULK]: z.object({
@@ -578,6 +587,7 @@ export const LogTypeData = z.object({
     pollQuestion: z.string(),
     emoteLinks: z.string(),
     pollAnswers: z.string(),
+    stickerLinks: z.string(),
   }),
 
   [LogType.SET_ANTIRAID_USER]: z.object({

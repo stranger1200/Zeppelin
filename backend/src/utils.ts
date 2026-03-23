@@ -654,6 +654,56 @@ export function getEmojiInString(str: string): string[] {
   return str.match(matchAllEmojiRegex) || [];
 }
 
+export function getCustomEmojiUrlsInString(str: string): string[] {
+  if (!str) return [];
+  const urls: string[] = [];
+  const seen = new Set<string>();
+  const regex = /<a?:[^:]+:(\d+)>/g;
+  let match;
+  while ((match = regex.exec(str)) !== null) {
+    const id = match[1];
+    const isAnimated = match[0].startsWith("<a:");
+    const url = isAnimated
+      ? `https://cdn.discordapp.com/emojis/${id}.webp?size=96&animated=true`
+      : `https://cdn.discordapp.com/emojis/${id}.webp`;
+    if (!seen.has(url)) {
+      seen.add(url);
+      urls.push(url);
+    }
+  }
+  return urls;
+}
+
+/** Extracts direct CDN URLs for custom Discord emojis from a message (content, embeds, forwards). Returns unique URLs. */
+export function getCustomEmojiUrlsInMessage(msg: SavedMessage): string[] {
+  const seen = new Set<string>();
+  const collected: string[] = [];
+  const add = (str: string | null | undefined) => {
+    for (const url of getCustomEmojiUrlsInString(str ?? "")) {
+      if (!seen.has(url)) {
+        seen.add(url);
+        collected.push(url);
+      }
+    }
+  };
+  const scanData = (data: { content?: string | null; embeds?: Array<{ title?: string | null; description?: string | null; fields?: Array<{ name?: string; value?: string }> }> }) => {
+    add(data.content);
+    for (const embed of data.embeds ?? []) {
+      add(embed.title);
+      add(embed.description);
+      for (const field of embed.fields ?? []) {
+        add(field.name);
+        add(field.value);
+      }
+    }
+  };
+  scanData(msg.data);
+  for (const snap of msg.data.message_snapshots ?? []) {
+    if (snap.message) scanData(snap.message);
+  }
+  return collected;
+}
+
 export function isEmoji(str: string): boolean {
   return str.match(`^(${unicodeEmojiRegex.source})|(${customEmojiRegex.source})$`) !== null;
 }

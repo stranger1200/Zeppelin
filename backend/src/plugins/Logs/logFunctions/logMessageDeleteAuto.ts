@@ -3,7 +3,7 @@ import { GuildPluginData } from "vety";
 import { LogType } from "../../../data/LogType.js";
 import { ISavedMessageAttachmentData, SavedMessage } from "../../../data/entities/SavedMessage.js";
 import { createTypedTemplateSafeValueContainer } from "../../../templateFormatter.js";
-import { messageSummary, UnknownUser, useMediaUrls } from "../../../utils.js";
+import { getCustomEmojiUrlsInMessage, messageSummary, UnknownUser, useMediaUrls } from "../../../utils.js";
 import { resolveChannelIds } from "../../../utils/resolveChannelIds.js";
 import {
   channelToTemplateSafeChannel,
@@ -31,19 +31,26 @@ export async function logMessageDeleteAuto(pluginData: GuildPluginData<LogsPlugi
   const { originalMessageLink, forwardLink, forwardTimestamp, forwardSummary, reply } =
     await getMessageReplyLogInfo(pluginData, data.message);
 
+  const config = pluginData.config.get();
+  const maxEmoteLinks = config.max_emote_links ?? 10;
+  const emoteLinkSeparator = config.emote_link_separator ?? "";
+  const pollAnswerSeparator = config.poll_answer_separator ?? ", ";
+  const pollAnswerFormat = config.poll_answer_format ?? "Answer {n}: `{text}`";
+  const pollAnswerPrefix = config.poll_answer_prefix ?? ", ";
   const poll = data.message.data.poll;
-  const pollAnswers = poll?.answers ?? [];
   const pollQuestion = poll?.question?.text ?? "";
-  const pollAnswer1 = pollAnswers[0]?.text ?? "";
-  const pollAnswer2 = pollAnswers[1]?.text ?? "";
-  const pollAnswer3 = pollAnswers[2]?.text ?? "";
-  const pollAnswer4 = pollAnswers[3]?.text ?? "";
-  const pollAnswer5 = pollAnswers[4]?.text ?? "";
-  const pollAnswer6 = pollAnswers[5]?.text ?? "";
-  const pollAnswer7 = pollAnswers[6]?.text ?? "";
-  const pollAnswer8 = pollAnswers[7]?.text ?? "";
-  const pollAnswer9 = pollAnswers[8]?.text ?? "";
-  const pollAnswer10 = pollAnswers[9]?.text ?? "";
+
+  const emoteUrls = getCustomEmojiUrlsInMessage(data.message).slice(0, maxEmoteLinks);
+  const wrap = (url: string) => (url ? `<${url}>` : "");
+  const emoteLinks = emoteUrls.map(wrap).join(emoteLinkSeparator);
+
+  const pollAnswersArr = Array.from(poll?.answers ?? [], (a) => a?.text ?? "").filter((t) => t !== "");
+  const pollAnswersJoined = pollAnswersArr
+    .map((text, i) =>
+      pollAnswerFormat.replace(/\{n\}/g, String(i + 1)).replace(/\{text\}/g, text),
+    )
+    .join(pollAnswerSeparator);
+  const pollAnswersFormatted = pollAnswersArr.length ? pollAnswerPrefix + pollAnswersJoined : "";
 
   return log(
     pluginData,
@@ -60,16 +67,8 @@ export async function logMessageDeleteAuto(pluginData: GuildPluginData<LogsPlugi
       forwardSummary,
       reply,
       pollQuestion,
-      pollAnswer1,
-      pollAnswer2,
-      pollAnswer3,
-      pollAnswer4,
-      pollAnswer5,
-      pollAnswer6,
-      pollAnswer7,
-      pollAnswer8,
-      pollAnswer9,
-      pollAnswer10,
+      emoteLinks,
+      pollAnswers: pollAnswersFormatted,
     }),
     {
       userId: data.user.id,

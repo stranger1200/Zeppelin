@@ -68,6 +68,11 @@ export const zLogsConfig: z.ZodType<{
   allow_user_mentions: boolean;
   timestamp_format: string | null;
   include_embed_timestamp: boolean;
+  max_emote_links: number;
+  emote_link_separator: string;
+  poll_answer_separator: string;
+  poll_answer_format: string;
+  poll_answer_prefix: string;
 }> = z.strictObject({
   channels: zLogChannelMap.default({}),
   format: zLogFormats.partial().default({}),
@@ -76,6 +81,16 @@ export const zLogsConfig: z.ZodType<{
   allow_user_mentions: z.boolean().default(false),
   timestamp_format: z.string().nullable().default("[<t:]X[>]"),
   include_embed_timestamp: z.boolean().default(true),
+  /** Max number of custom emote links to parse from deleted messages. Default 10. Use {emoteLinks} in formats. */
+  max_emote_links: z.number().min(1).default(10),
+  /** Separator between emote links in {emoteLinks}. Default "". Use "\n" for newlines. */
+  emote_link_separator: z.string().default(""),
+  /** Separator between poll answers in {pollAnswers}. Default ", ". */
+  poll_answer_separator: z.string().default(", "),
+  /** Format for each poll answer in {pollAnswers}. {n} = answer number, {text} = answer text. E.g. "Answer {n}: `{text}`" or "{text}" for no numbering. */
+  poll_answer_format: z.string().default("Answer {n}: `{text}`"),
+  /** Text before {pollAnswers} when there are answers. Default ", " so it reads "Poll title: `Q`, Answer 1: ..." */
+  poll_answer_prefix: z.string().default(", "),
 });
 
 // Hacky way of allowing a """null""" default value for config.format.timestamp due to legacy io-ts reasons
@@ -254,16 +269,8 @@ export const LogTypeData = z.object({
     forwardSummary: z.string(),
     reply: z.instanceof(TemplateSafeValueContainer).nullable(),
     pollQuestion: z.string(),
-    pollAnswer1: z.string(),
-    pollAnswer2: z.string(),
-    pollAnswer3: z.string(),
-    pollAnswer4: z.string(),
-    pollAnswer5: z.string(),
-    pollAnswer6: z.string(),
-    pollAnswer7: z.string(),
-    pollAnswer8: z.string(),
-    pollAnswer9: z.string(),
-    pollAnswer10: z.string(),
+    emoteLinks: z.string(),
+    pollAnswers: z.string(),
   }),
 
   [LogType.MESSAGE_DELETE_POLL]: z.object({
@@ -278,16 +285,8 @@ export const LogTypeData = z.object({
     forwardSummary: z.string(),
     reply: z.instanceof(TemplateSafeValueContainer).nullable(),
     pollQuestion: z.string(),
-    pollAnswer1: z.string(),
-    pollAnswer2: z.string(),
-    pollAnswer3: z.string(),
-    pollAnswer4: z.string(),
-    pollAnswer5: z.string(),
-    pollAnswer6: z.string(),
-    pollAnswer7: z.string(),
-    pollAnswer8: z.string(),
-    pollAnswer9: z.string(),
-    pollAnswer10: z.string(),
+    emoteLinks: z.string(),
+    pollAnswers: z.string(),
   }),
 
   [LogType.MESSAGE_DELETE_FORWARD]: z.object({
@@ -302,16 +301,8 @@ export const LogTypeData = z.object({
     forwardSummary: z.string(),
     reply: z.instanceof(TemplateSafeValueContainer).nullable(),
     pollQuestion: z.string(),
-    pollAnswer1: z.string(),
-    pollAnswer2: z.string(),
-    pollAnswer3: z.string(),
-    pollAnswer4: z.string(),
-    pollAnswer5: z.string(),
-    pollAnswer6: z.string(),
-    pollAnswer7: z.string(),
-    pollAnswer8: z.string(),
-    pollAnswer9: z.string(),
-    pollAnswer10: z.string(),
+    emoteLinks: z.string(),
+    pollAnswers: z.string(),
   }),
 
   [LogType.MESSAGE_DELETE_BULK]: z.object({
@@ -585,16 +576,8 @@ export const LogTypeData = z.object({
     forwardSummary: z.string(),
     reply: z.instanceof(TemplateSafeValueContainer).nullable(),
     pollQuestion: z.string(),
-    pollAnswer1: z.string(),
-    pollAnswer2: z.string(),
-    pollAnswer3: z.string(),
-    pollAnswer4: z.string(),
-    pollAnswer5: z.string(),
-    pollAnswer6: z.string(),
-    pollAnswer7: z.string(),
-    pollAnswer8: z.string(),
-    pollAnswer9: z.string(),
-    pollAnswer10: z.string(),
+    emoteLinks: z.string(),
+    pollAnswers: z.string(),
   }),
 
   [LogType.SET_ANTIRAID_USER]: z.object({

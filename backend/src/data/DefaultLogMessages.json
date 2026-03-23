@@ -35,12 +35,12 @@
   "ROLE_UPDATE": "{timestamp} 🖊 Role **{newRole.name}** (`{newRole.id}`) was edited. Changes:\n{differenceString}",
 
   "MESSAGE_EDIT": "{timestamp} ✏ {userMention(user)} edited their message (`{after.id}`) in {channelMention(channel)}:\n**Before:**{messageSummary(before)}**After:**{messageSummary(after)}",
-  "MESSAGE_DELETE": "{timestamp} 🗑 Message (`{message.id}`) from {userMention(user)} deleted in {channelMention(channel)} (originally posted at **{messageDate}**):{messageSummaryText}{originalMessageLink}",
-  "MESSAGE_DELETE_POLL": "{timestamp} 🗑 Poll from {userMention(user)} deleted in {channelMention(channel)} (originally posted at **{messageDate}**):\nPoll title: `{pollQuestion}`{if(pollAnswer1, concat(\", Answer 1: `\", pollAnswer1, \"`\"), \"\")}{if(pollAnswer2, concat(\", Answer 2: `\", pollAnswer2, \"`\"), \"\")}{if(pollAnswer3, concat(\", Answer 3: `\", pollAnswer3, \"`\"), \"\")}{if(pollAnswer4, concat(\", Answer 4: `\", pollAnswer4, \"`\"), \"\")}{if(pollAnswer5, concat(\", Answer 5: `\", pollAnswer5, \"`\"), \"\")}{if(pollAnswer6, concat(\", Answer 6: `\", pollAnswer6, \"`\"), \"\")}{if(pollAnswer7, concat(\", Answer 7: `\", pollAnswer7, \"`\"), \"\")}{if(pollAnswer8, concat(\", Answer 8: `\", pollAnswer8, \"`\"), \"\")}{if(pollAnswer9, concat(\", Answer 9: `\", pollAnswer9, \"`\"), \"\")}{if(pollAnswer10, concat(\", Answer 10: `\", pollAnswer10, \"`\"), \"\")}",
-  "MESSAGE_DELETE_FORWARD": "{timestamp} 🗑 Message from {userMention(user)} deleted in {channelMention(channel)}:{forwardSummary}{originalMessageLink}",
+  "MESSAGE_DELETE": "{timestamp} 🗑 Message (`{message.id}`) from {userMention(user)} deleted in {channelMention(channel)} (originally posted at **{messageDate}**):{messageSummaryText}{if(emoteLinks, concat(\"\n\", \"Emotes:\", \"\n\", emoteLinks), \"\")}{originalMessageLink}",
+  "MESSAGE_DELETE_POLL": "{timestamp} 🗑 Poll from {userMention(user)} deleted in {channelMention(channel)} (originally posted at **{messageDate}**):\nPoll title: `{pollQuestion}`{pollAnswers}",
+  "MESSAGE_DELETE_FORWARD": "{timestamp} 🗑 Message from {userMention(user)} deleted in {channelMention(channel)}:{forwardSummary}{if(emoteLinks, concat(\"\n\", \"Emotes:\", \"\n\", emoteLinks), \"\")}{originalMessageLink}",
   "MESSAGE_DELETE_BULK": "{timestamp} 🗑 **{count}** messages by {authorIds} deleted in {channelMention(channel)} ({archiveUrl})",
   "MESSAGE_DELETE_BARE": "{timestamp} 🗑 Message (`{messageId}`) deleted in {channelMention(channel)} (no more info available)",
-  "MESSAGE_DELETE_AUTO": "{timestamp} 🗑 Auto-deleted message (`{message.id}`) from {userMention(user)} in {channelMention(channel)} (originally posted at **{messageDate}**):{messageSummaryText}{originalMessageLink}",
+  "MESSAGE_DELETE_AUTO": "{timestamp} 🗑 Auto-deleted message (`{message.id}`) from {userMention(user)} in {channelMention(channel)} (originally posted at **{messageDate}**):{messageSummaryText}{if(emoteLinks, concat(\"\n\", \"Emotes:\", \"\n\", emoteLinks), \"\")}{originalMessageLink}",
 
   "VOICE_CHANNEL_JOIN": "{timestamp} 🎙 🔵 {userMention(member)} joined {channelMention(channel)}",
   "VOICE_CHANNEL_MOVE": "{timestamp} 🎙 ↔ {userMention(member)} moved from {channelMention(oldChannel)} to {channelMention(newChannel)}",

@@ -16,7 +16,7 @@ export interface AutoReactionsPluginType extends BasePluginType {
     logs: GuildLogs;
     savedMessages: GuildSavedMessages;
     autoReactions: GuildAutoReactions;
-    cache: Map<string, AutoReaction | null>;
+    cache: Map<string, { autoReaction: AutoReaction | null; isFromThreadConfig: boolean }>;
     common: pluginUtils.PluginPublicInterface<typeof CommonPlugin>;
   };
 }

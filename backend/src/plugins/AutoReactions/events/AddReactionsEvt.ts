@@ -24,19 +24,24 @@ export const AddReactionsEvt = autoReactionsEvt({
     }
 
     let autoReaction: AutoReaction | null = null;
+    let isFromThreadConfig = false;
     const lock = await pluginData.locks.acquire(`auto-reactions-${channel.id}`);
     if (pluginData.state.cache.has(channel.id)) {
-      autoReaction = pluginData.state.cache.get(channel.id) ?? null;
+      const cached = pluginData.state.cache.get(channel.id);
+      autoReaction = cached?.autoReaction ?? null;
+      isFromThreadConfig = cached?.isFromThreadConfig ?? false;
     } else {
       autoReaction = (await pluginData.state.autoReactions.getForChannel(channel.id)) ?? null;
-      if (!autoReaction && channel.isThread() && channel.parentId) {
+      if (autoReaction) {
+        isFromThreadConfig = true;
+      } else if (channel.isThread() && channel.parentId) {
         const parent = channel.parent ?? (await message.guild?.channels.fetch(channel.parentId));
         if (parent) {
           autoReaction =
             (await pluginData.state.autoReactions.getForChannel(channel.parentId)) ?? null;
         }
       }
-      pluginData.state.cache.set(channel.id, autoReaction);
+      pluginData.state.cache.set(channel.id, { autoReaction, isFromThreadConfig });
     }
     lock.unlock();
 
@@ -44,8 +49,8 @@ export const AddReactionsEvt = autoReactionsEvt({
       return;
     }
 
-    // Forum threads: only react to the first message (the post content), not subsequent replies
-    if (channel.isThread() && channel.parentId) {
+    // Forum threads: only react to first message when inherited from forum; thread-specific config reacts to all messages
+    if (!isFromThreadConfig && channel.isThread() && channel.parentId) {
       const parent = channel.parent ?? (await message.guild?.channels.fetch(channel.parentId));
       if (parent?.type === ChannelType.GuildForum) {
         try {

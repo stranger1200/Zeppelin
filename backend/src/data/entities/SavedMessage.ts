@@ -65,6 +65,25 @@ export interface ISavedMessageStickerData {
   type: StickerType | null;
 }
 
+/** Content of a forwarded message snapshot */
+export interface IMessageSnapshotMessageData {
+  content?: string | null;
+  embeds?: ISavedMessageEmbedData[];
+  attachments?: ISavedMessageAttachmentData[];
+  timestamp?: number;
+}
+
+/** Minimal structure for a forwarded message snapshot (content, embeds, attachments) */
+export interface IMessageSnapshotData {
+  message?: IMessageSnapshotMessageData;
+}
+
+/** Minimal structure for poll data (question and answer text) */
+export interface ISavedMessagePollData {
+  question?: { text?: string };
+  answers?: Array<{ text?: string }>;
+}
+
 export interface ISavedMessageData {
   attachments?: ISavedMessageAttachmentData[];
   author: {
@@ -79,7 +98,13 @@ export interface ISavedMessageData {
     messageId?: Snowflake | null;
     channelId?: Snowflake | null;
     guildId?: Snowflake | null;
+    /** 0 = reply, 1 = forward */
+    type?: number;
   };
+  /** Poll data when the message contains a poll */
+  poll?: ISavedMessagePollData;
+  /** Forwarded message snapshots when the message is a forward */
+  message_snapshots?: IMessageSnapshotData[];
 }
 
 @Entity("messages")

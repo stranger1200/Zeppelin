@@ -8,7 +8,13 @@ import { decryptJson, encryptJson } from "../utils/cryptHelpers.js";
 import { BaseGuildRepository } from "./BaseGuildRepository.js";
 import { buildEntity } from "./buildEntity.js";
 import { dataSource } from "./dataSource.js";
-import { ISavedMessageData, SavedMessage } from "./entities/SavedMessage.js";
+import {
+  IMessageSnapshotData,
+  IMessageSnapshotMessageData,
+  ISavedMessageData,
+  ISavedMessagePollData,
+  SavedMessage,
+} from "./entities/SavedMessage.js";
 
 export class GuildSavedMessages extends BaseGuildRepository<SavedMessage> {
   private messages: Repository<SavedMessage>;
@@ -124,10 +130,72 @@ export class GuildSavedMessages extends BaseGuildRepository<SavedMessage> {
         messageId: msg.reference.messageId ?? null,
         channelId: msg.reference.channelId ?? null,
         guildId: msg.reference.guildId ?? null,
+        type: (msg.reference as { type?: number }).type,
       };
     }
 
+    if ((msg as Message & { poll?: { question?: { text?: string }; answers?: Iterable<{ text?: string }> } }).poll) {
+      const poll = (msg as Message & { poll: { question?: { text?: string }; answers?: Iterable<{ text?: string }> } }).poll;
+      data.poll = {
+        question: poll.question ? { text: poll.question.text } : undefined,
+        answers: Array.from(poll.answers ?? []).map((a) => ({ text: a.text })),
+      } as ISavedMessagePollData;
+    }
+
+    // messageSnapshots is a Collection (uses .size, not .length); extract forwarded content
+    const snapshots = (msg as Message & { messageSnapshots?: { size: number; values: () => Iterable<{ content?: string; embeds?: unknown[]; attachments?: unknown[]; timestamp?: number }> } }).messageSnapshots;
+    if (snapshots && (snapshots.size ?? 0) > 0) {
+      data.message_snapshots = Array.from(snapshots.values()).map((s) =>
+        this.snapshotToSavedData(s),
+      );
+    }
+
     return data;
+  }
+
+  protected snapshotToSavedData(snapshotMessage: unknown): IMessageSnapshotData {
+    const msg = snapshotMessage as {
+      content?: string | null;
+      embeds?: Array<{ title?: string; description?: string; fields?: Array<{ name: string; value: string }> }> | { values: () => Iterable<unknown> };
+      attachments?: Array<{ url?: string; name?: string; id?: string }> | { values: () => Iterable<{ url?: string; name?: string; id?: string }> };
+      timestamp?: number;
+    } | null;
+    if (!msg) return {};
+
+    const toArray = <T>(x: unknown): T[] =>
+      !x ? [] : Array.isArray(x) ? (x as T[]) : typeof (x as { values?: () => Iterable<T> }).values === "function" ? Array.from((x as { values: () => Iterable<T> }).values()) : [];
+
+    const data: IMessageSnapshotMessageData = {};
+    if (msg.content != null) data.content = msg.content;
+    if (msg.timestamp != null) data.timestamp = msg.timestamp;
+
+    const embeds = toArray(msg.embeds) as Array<{ title?: string; description?: string; fields?: Array<{ name: string; value: string }> }>;
+    if (embeds.length) {
+      data.embeds = embeds.map((e) => ({
+        title: e.title ?? null,
+        description: e.description ?? null,
+        url: null,
+        timestamp: null,
+        color: null,
+        fields: (e.fields ?? []).map((f) => ({ name: f.name, value: f.value, inline: false })),
+      }));
+    }
+
+    const attachments = toArray(msg.attachments) as Array<{ id?: string; url?: string; name?: string }>;
+    if (attachments.length) {
+      data.attachments = attachments.map((a, i) => ({
+        id: a.id ?? String(i),
+        contentType: null,
+        name: a.name ?? null,
+        proxyURL: a.url ?? "",
+        size: 0,
+        spoiler: false,
+        url: a.url ?? "",
+        width: null,
+      }));
+    }
+
+    return { message: data };
   }
 
   protected async _processEntityFromDB(entity: SavedMessage | undefined) {

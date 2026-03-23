@@ -1323,20 +1323,41 @@ export function createDisabledButtonRow(
   return newRow;
 }
 
-export function messageSummary(msg: SavedMessage) {
-  // Regular text content
-  let result = "```\n" + (msg.data.content ? escapeCodeBlock(msg.data.content) : "<no text content>") + "```";
+export function summariseMessageLikeData(
+  data: { content?: string | null; embeds?: unknown[]; attachments?: Array<{ url?: string }> },
+): string {
+  let result = "```\n" + (data.content ? escapeCodeBlock(data.content) : "<no text content>") + "```";
 
-  // Rich embed
-  const richEmbed = (msg.data.embeds || []).find((e) => (e as EmbedData).type === EmbedType.Rich);
+  const richEmbed = (data.embeds || []).find((e) => (e as EmbedData).type === EmbedType.Rich);
   if (richEmbed) result += "Embed:```" + escapeCodeBlock(JSON.stringify(richEmbed)) + "```";
 
-  // Attachments
-  if (msg.data.attachments && msg.data.attachments.length) {
+  if (data.attachments?.length) {
     result +=
       "Attachments:\n" +
-      msg.data.attachments.map((a: ISavedMessageAttachmentData) => disableLinkPreviews(a.url)).join("\n") +
+      data.attachments.map((a: { url?: string }) => disableLinkPreviews(a.url ?? "")).join("\n") +
       "\n";
+  }
+
+  return result;
+}
+
+export function messageSummary(msg: SavedMessage) {
+  let result = summariseMessageLikeData(msg.data);
+
+  if (msg.data.poll) {
+    const poll = msg.data.poll;
+    const question = poll.question?.text ?? "?";
+    const answers = (poll.answers ?? []).map((a, i) => `  ${i + 1}. ${a.text ?? ""}`).join("\n");
+    result += `Poll:\n**Question:** ${question}\n**Answers:**\n${answers || "  (none)"}\n`;
+  }
+
+  if (msg.data.message_snapshots?.length) {
+    for (const snapshot of msg.data.message_snapshots) {
+      const m = snapshot.message;
+      if (m) {
+        result += "\n**Forwarded:**\n" + summariseMessageLikeData(m);
+      }
+    }
   }
 
   return result;

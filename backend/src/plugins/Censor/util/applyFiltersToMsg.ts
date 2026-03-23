@@ -38,6 +38,23 @@ export async function applyFiltersToMsg(
     messageContent += " " + JSON.stringify(embeds);
   }
 
+  // Include forwarded message content (message_snapshots) and poll content so filters apply to them
+  if (savedMessage.data.message_snapshots?.length) {
+    for (const snap of savedMessage.data.message_snapshots) {
+      const m = snap.message;
+      if (m?.content) messageContent += " " + m.content;
+      if (m?.embeds?.length) messageContent += " " + JSON.stringify(m.embeds);
+      if (m?.attachments?.length) messageContent += " " + JSON.stringify(m.attachments);
+    }
+  }
+  if (savedMessage.data.poll) {
+    const p = savedMessage.data.poll;
+    if (p.question?.text) messageContent += " " + p.question.text;
+    for (const a of p.answers ?? []) {
+      if (a.text) messageContent += " " + a.text;
+    }
+  }
+
   // Filter zalgo
   const filterZalgo = config.filter_zalgo;
   if (filterZalgo) {

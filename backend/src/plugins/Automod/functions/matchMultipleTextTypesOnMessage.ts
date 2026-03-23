@@ -1,25 +1,16 @@
-import { ActivityType, Embed } from "discord.js";
 import { GuildPluginData } from "vety";
 import { SavedMessage } from "../../../data/entities/SavedMessage.js";
-import { renderUsername, resolveMember } from "../../../utils.js";
-import { DeepMutable } from "../../../utils/typeUtils.js";
+import { resolveMember } from "../../../utils.js";
 import { AutomodPluginType } from "../types.js";
+import { MatchableTextType, TEXT_EXTRACTORS, type TextSourceFlags } from "./textExtractors/index.js";
 
-type TextTriggerWithMultipleMatchTypes = {
-  match_messages: boolean;
-  match_embeds: boolean;
-  match_visible_names: boolean;
-  match_usernames: boolean;
-  match_nicknames: boolean;
-  match_custom_status: boolean;
-};
-
-export type MatchableTextType = "message" | "embed" | "visiblename" | "username" | "nickname" | "customstatus";
+type TextTriggerWithMultipleMatchTypes = TextSourceFlags;
 
 type YieldedContent = [MatchableTextType, string];
 
 /**
- * Generator function that allows iterating through matchable pieces of text of a SavedMessage
+ * Generator function that allows iterating through matchable pieces of text of a SavedMessage.
+ * Uses a pluggable extractor registry so new text sources can be added without editing this file.
  */
 export async function* matchMultipleTextTypesOnMessage(
   pluginData: GuildPluginData<AutomodPluginType>,
@@ -29,34 +20,20 @@ export async function* matchMultipleTextTypesOnMessage(
   const member = await resolveMember(pluginData.client, pluginData.guild, msg.user_id);
   if (!member) return;
 
-  if (trigger.match_messages && msg.data.content) {
-    yield ["message", msg.data.content];
-  }
+  const context = { member, pluginData };
 
-  if (trigger.match_embeds && msg.data.embeds?.length) {
-    const copiedEmbed: DeepMutable<Embed> = JSON.parse(JSON.stringify(msg.data.embeds[0]));
-    if (copiedEmbed.video) {
-      copiedEmbed.description = ""; // The description is not rendered, hence it doesn't need to be matched
-    }
-    yield ["embed", JSON.stringify(copiedEmbed)];
-  }
+  for (const extractor of TEXT_EXTRACTORS) {
+    const enabled = trigger[extractor.key];
+    if (!enabled) continue;
 
-  if (trigger.match_visible_names) {
-    yield ["visiblename", member.displayName || msg.data.author.username];
-  }
+    const result = extractor.extract(msg, context);
+    if (result === null) continue;
 
-  if (trigger.match_usernames) {
-    yield ["username", renderUsername(msg.data.author.username, msg.data.author.discriminator)];
-  }
-
-  if (trigger.match_nicknames && member.nickname) {
-    yield ["nickname", member.nickname];
-  }
-
-  for (const activity of member.presence?.activities ?? []) {
-    if (activity.type === ActivityType.Custom) {
-      yield ["customstatus", `${activity.emoji} ${activity.name}`];
-      break;
+    const strings = Array.isArray(result) ? result : [result];
+    for (const str of strings) {
+      yield [extractor.type, str];
     }
   }
 }
+
+export type { MatchableTextType };

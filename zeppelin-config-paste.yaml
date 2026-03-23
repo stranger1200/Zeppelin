@@ -146,6 +146,10 @@ plugins:
         DM_FAILED: "{timestamp} ⚠️ Failed to DM {userMention(user)} ({source})"
         MASSBAN: "{timestamp} ⚒ {userMention(mod)} massbanned {count} users. Reason: {reason}"
 
+  censor:
+    config:
+      blocked_words: ["hello"]
+
   context_menu: {}  # Right-click user → Note, Warn, Mute, Ban, etc.
   tags: {}
   time_and_date: {}

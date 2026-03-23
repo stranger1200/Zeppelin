@@ -192,7 +192,6 @@ export class TemplateSafeSavedMessageData extends TemplateSafeValueContainer {
   stickers?: Array<TypedTemplateSafeValueContainer<ISavedMessageStickerData>>;
   timestamp: number;
   reference?: TypedTemplateSafeValueContainer<ISavedMessageData["reference"]>;
-
   constructor(data: InputProps<TemplateSafeSavedMessageData>) {
     super();
     ingestDataIntoTemplateSafeValueContainer(this, data);
@@ -452,8 +451,10 @@ export function savedMessageToTemplateSafeSavedMessage(savedMessage: SavedMessag
             messageId: savedMessage.data.reference.messageId ?? null,
             channelId: savedMessage.data.reference.channelId ?? null,
             guildId: savedMessage.data.reference.guildId ?? null,
+            type: savedMessage.data.reference.type,
           }) as TypedTemplateSafeValueContainer<ISavedMessageData["reference"]>)
         : undefined,
+
     }),
   });
 }

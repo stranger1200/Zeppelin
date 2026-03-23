@@ -3,7 +3,7 @@ import { GuildPluginData } from "vety";
 import { LogType } from "../../../data/LogType.js";
 import { ISavedMessageAttachmentData, SavedMessage } from "../../../data/entities/SavedMessage.js";
 import { createTypedTemplateSafeValueContainer } from "../../../templateFormatter.js";
-import { UnknownUser, useMediaUrls } from "../../../utils.js";
+import { messageSummary, UnknownUser, useMediaUrls } from "../../../utils.js";
 import { resolveChannelIds } from "../../../utils/resolveChannelIds.js";
 import {
   channelToTemplateSafeChannel,
@@ -35,6 +35,7 @@ export async function logMessageDeleteAuto(pluginData: GuildPluginData<LogsPlugi
     LogType.MESSAGE_DELETE_AUTO,
     createTypedTemplateSafeValueContainer({
       message: savedMessageToTemplateSafeSavedMessage(data.message),
+      messageSummaryText: messageSummary(data.message),
       user: userToTemplateSafeUser(data.user),
       channel: channelToTemplateSafeChannel(data.channel),
       messageDate: data.messageDate,

@@ -4,7 +4,7 @@ import moment from "moment-timezone";
 import { LogType } from "../../../data/LogType.js";
 import { ISavedMessageAttachmentData, SavedMessage } from "../../../data/entities/SavedMessage.js";
 import { createTypedTemplateSafeValueContainer } from "../../../templateFormatter.js";
-import { UnknownUser, useMediaUrls } from "../../../utils.js";
+import { messageSummary, UnknownUser, useMediaUrls } from "../../../utils.js";
 import { resolveChannelIds } from "../../../utils/resolveChannelIds.js";
 import {
   channelToTemplateSafeChannel,
@@ -43,6 +43,7 @@ export async function logMessageDelete(pluginData: GuildPluginData<LogsPluginTyp
       user: userToTemplateSafeUser(data.user),
       channel: channelToTemplateSafeChannel(data.channel),
       message: savedMessageToTemplateSafeSavedMessage(data.message),
+      messageSummaryText: messageSummary(data.message),
       messageDate: pluginData
         .getPlugin(TimeAndDatePlugin)
         .inGuildTz(moment.utc(data.message.data.timestamp, "x"))

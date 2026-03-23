@@ -240,6 +240,7 @@ export const LogTypeData = z.object({
     channel: z.instanceof(TemplateSafeChannel),
     messageDate: z.string(),
     message: z.instanceof(TemplateSafeSavedMessage),
+    messageSummaryText: z.string(),
     replyInfo: z.string(),
     reply: z.instanceof(TemplateSafeValueContainer).nullable(),
   }),
@@ -489,6 +490,7 @@ export const LogTypeData = z.object({
 
   [LogType.MESSAGE_DELETE_AUTO]: z.object({
     message: z.instanceof(TemplateSafeSavedMessage),
+    messageSummaryText: z.string(),
     user: z.instanceof(TemplateSafeUser),
     channel: z.instanceof(TemplateSafeChannel),
     messageDate: z.string(),

@@ -23,7 +23,6 @@ import {
 } from "../../utils/templateSafeObjects.js";
 import { TemplateSafeValueContainer } from "../../templateFormatter.js";
 import DefaultLogMessages from "../../data/DefaultLogMessages.json" with { type: "json" };
-import { TemplateSafeValueContainer } from "templateFormatter.js";
 
 const DEFAULT_BATCH_TIME = 1000;
 const MIN_BATCH_TIME = 250;
@@ -64,7 +63,7 @@ export type TLogChannelMap = z.infer<typeof zLogChannelMap>;
 
 export const zLogsConfig = z.strictObject({
   channels: zLogChannelMap.default({}),
-  format: zLogFormats.prefault({}),
+  format: zLogFormats.partial().default({}),
   // Legacy/deprecated, if below is false mentions wont actually ping. In case you really want the old behavior, set below to true
   ping_user: z.boolean().default(true),
   allow_user_mentions: z.boolean().default(false),

@@ -60,7 +60,7 @@ export async function actualMassUnbanCmd(
         modId: author.id,
         type: CaseTypes.Unban,
         reason: `Mass unban: ${unbanReason}`,
-        postInCaseLogOverride: false,
+        postInCaseLogOverride: true,
       });
     } catch {
       failedUnbans.push({ userId, reason: UnbanFailReasons.UNBAN_FAILED });

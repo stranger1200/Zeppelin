@@ -60,15 +60,24 @@ These commands are run inside the dev container. You should be able to open a te
 
 1. `pnpm install`
 
-### Starting the backend (bot + api)
+### 2. Run database migrations
+
+Before first run, create the database tables:
+
+1. `cd ~/zeppelin/backend`
+2. `pnpm run migrate-dev`
+
+(Use `/workspace/zeppelin/backend` if `~/zeppelin` is not available.)
+
+### 3. Starting the backend (bot + api)
 
 1. `cd ~/zeppelin/backend`
 2. `pnpm run watch`
 
-### Starting the dashboard
+### 4. Starting the dashboard
 
 1. `cd ~/zeppelin/dashboard`
-2. `pnpm run watch`
+2. `pnpm run dev`
 
 ### Opening the dashboard
 Browse to https://localhost:3300 to view the dashboard

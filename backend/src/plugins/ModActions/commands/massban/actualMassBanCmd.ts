@@ -107,7 +107,7 @@ export async function actualMassBanCmd(
           modId: author.id,
           type: CaseTypes.Ban,
           reason: `Mass ban: ${banReason}`,
-          postInCaseLogOverride: false,
+          postInCaseLogOverride: true,
         });
 
         pluginData.state.events.emit("ban", userId, banReason);

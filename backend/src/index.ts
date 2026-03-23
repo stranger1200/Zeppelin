@@ -55,6 +55,24 @@ import { DecayingCounter } from "./utils/DecayingCounter.js";
 import { enableProfiling } from "./utils/easyProfiler.js";
 import { loadYamlSafely } from "./utils/loadYamlSafely.js";
 
+// #region agent log
+import fs from "node:fs";
+import path from "node:path";
+import { rootDir } from "./paths.js";
+try {
+  fs.appendFileSync(
+    path.join(rootDir, ".cursor", "debug-492615.log"),
+    JSON.stringify({
+      sessionId: "492615",
+      location: "index.ts",
+      message: "Bot process started",
+      data: { hypothesisId: "B" },
+      timestamp: Date.now(),
+    }) + "\n",
+  );
+} catch (_) {}
+// #endregion
+
 // Error handling
 let recentPluginErrors = 0;
 const RECENT_PLUGIN_ERROR_EXIT_THRESHOLD = 5;

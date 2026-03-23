@@ -1,0 +1,154 @@
+# Zeppelin guild config - paste into dashboard Config tab
+# Replace MUTE_ROLE_ID with your server's mute role ID
+
+prefix: "!!"
+
+levels:
+  "484526479770910728": 1000
+  # Add role IDs for level-based permissions:
+  # "ROLE_ID": 100  # admin
+  # "ROLE_ID": 50   # mod
+
+plugins:
+  common:
+    config:
+      success_emoji: "✅"
+      error_emoji: "❌"
+
+  utility:
+    config:
+      can_ping: true
+      can_about: true
+      can_info: true
+      can_server: true
+      can_userinfo: true
+      can_channelinfo: true
+      can_help: true
+      can_level: true
+      can_search: true
+      can_clean: false
+      can_nickname: false
+      can_vcmove: false
+      can_avatar: true
+      can_jumbo: true
+      can_context: true
+      can_source: true
+    overrides:
+      - level: ">=50"
+        config:
+          can_clean: true
+          can_nickname: true
+          can_vcmove: true
+      - level: ">=100"
+        config:
+          can_reload_guild: true
+
+  mod_actions:
+    config:
+      dm_on_warn: true
+      dm_on_kick: true
+      dm_on_ban: true
+      message_on_warn: true
+      message_on_kick: true
+      message_on_ban: true
+      message_channel: "1485448853774929950"
+      warn_message: |
+        You have been warned on **{guildName}**.
+        **Reason:** {reason}
+      kick_message: |
+        You have been kicked from **{guildName}**.
+        **Reason:** {reason}
+      ban_message: |
+        You have been banned from **{guildName}**.
+        **Reason:** {reason}
+      can_warn: false
+      can_mute: false
+      can_kick: false
+      can_ban: false
+      can_unban: false
+      can_view: false
+      can_addcase: false
+      can_note: false
+    overrides:
+      - level: ">=50"
+        config:
+          can_note: true
+          can_warn: true
+          can_mute: true
+          can_kick: true
+          can_ban: true
+          can_unban: true
+          can_view: true
+          can_addcase: true
+      - level: ">=100"
+        config:
+          can_massban: true
+          can_massunban: true
+          can_massmute: true
+          can_hidecase: true
+          can_deletecase: true
+
+  mutes:
+    config:
+      mute_role: "1485466693336698890"
+      dm_on_mute: true
+      dm_on_update: true
+      message_on_mute: true
+      message_on_update: true
+      message_channel: "1485448853774929950"
+      mute_message: "You have been muted on **{guildName}**.\n**Reason:** {reason}"
+      timed_mute_message: "You have been muted for **{time}** on **{guildName}**.\n**Reason:** {reason}"
+      remove_roles_on_mute: true
+      restore_roles_on_mute: true
+    overrides:
+      - level: ">=50"
+        config:
+          can_view_list: true
+
+  cases:
+    config:
+      case_log_channel: "1485448853774929950"
+      log_automatic_actions: true
+      show_relative_times: true
+
+  logs:
+    config:
+      channels:
+        "1485448853774929950":
+          exclude_bots: false
+      format:
+        MEMBER_WARN: "{timestamp} ⚠️ {userMention(member)} was warned by {userMention(mod)}"
+        MEMBER_MUTE: "{timestamp} 🔇 {userMention(user)} was muted by {userMention(mod)}"
+        MEMBER_UNMUTE: "{timestamp} 🔊 {userMention(user)} was unmuted by {userMention(mod)}"
+        MEMBER_KICK: "{timestamp} 👢 {userMention(user)} was kicked by {userMention(mod)}"
+        MEMBER_BAN: "{timestamp} 🔨 {userMention(user)} was banned by {userMention(mod)}"
+        MEMBER_UNBAN: "{timestamp} 🔓 User (`{userId}`) was unbanned by {userMention(mod)}"
+        MEMBER_JOIN: "{timestamp} 📥 {new} {userMention(member)} joined (created <t:{account_age_ts}:R>)"
+        MEMBER_LEAVE: "{timestamp} 📤 {userMention(member)} left the server"
+        MEMBER_ROLE_ADD: "{timestamp} 🔑 {userMention(mod)} added roles for {userMention(member)}: **{roles}**"
+        MEMBER_ROLE_REMOVE: "{timestamp} 🔑 {userMention(mod)} removed roles from {userMention(member)}: **{roles}**"
+        MEMBER_NICK_CHANGE: "{timestamp} ✏ {userMention(member)}: **{oldNick}** → **{newNick}**"
+        MEMBER_NOTE: "{timestamp} 🖊 Note on {userMention(user)} by {userMention(mod)}"
+        MESSAGE_DELETE: "{timestamp} 🗑 Message from {userMention(user)} deleted in {channelMention(channel)}:{messageSummary(message)}{replyInfo}"
+        MESSAGE_EDIT: "{timestamp} ✏ {userMention(user)} edited in {channelMention(channel)}: **Before:**{messageSummary(before)} **After:**{messageSummary(after)}"
+        CHANNEL_CREATE: "{timestamp} 🖊 Channel {channelMention(channel)} was created"
+        CHANNEL_DELETE: "{timestamp} 🗑 Channel {channelMention(channel)} was deleted"
+        CHANNEL_UPDATE: "{timestamp} ✏ Channel {channelMention(newChannel)} was edited"
+        ROLE_CREATE: "{timestamp} 🖊 Role **{role.name}** was created"
+        ROLE_DELETE: "{timestamp} 🗑 Role **{role.name}** was deleted"
+        ROLE_UPDATE: "{timestamp} ✏ Role **{newRole.name}** was edited"
+        CASE_CREATE: "{timestamp} 📋 Case #{caseNum} ({caseType}) created by {userMention(mod)}"
+        CASE_UPDATE: "{timestamp} ✏ Case #{caseNumber} updated by {userMention(mod)}: {note}"
+        CASE_DELETE: "{timestamp} ✂️ Case #{case.case_number} deleted by {userMention(mod)}"
+        CLEAN: "{timestamp} 🚿 {userMention(mod)} cleaned **{count}** message(s) in {channelMention(channel)}"
+        CENSOR: "{timestamp} 🛑 Censored from {userMention(user)} in {channelMention(channel)}: {reason}"
+        AUTOMOD_ACTION: "{timestamp} 🤖 {rule} triggered: **{actionsTaken}** {matchSummary}"
+        DM_FAILED: "{timestamp} ⚠️ Failed to DM {userMention(user)} ({source})"
+        MASSBAN: "{timestamp} ⚒ {userMention(mod)} massbanned {count} users. Reason: {reason}"
+
+  context_menu: {}  # Right-click user → Note, Warn, Mute, Ban, etc.
+  tags: {}
+  time_and_date: {}
+  message_saver: {}
+  name_history: {}
+  guild_info_saver: {}

@@ -3,6 +3,7 @@ import { GuildPluginData } from "vety";
 import { humanizeDuration } from "../../../../humanizeDuration.js";
 import { UnknownUser, asSingleLine, renderUsername } from "../../../../utils.js";
 import { MutesPlugin } from "../../../Mutes/MutesPlugin.js";
+import { confirmUnresolvedSnippets } from "../../../../utils/confirmUnresolvedSnippets.js";
 import { handleAttachmentLinkDetectionAndGetRestriction } from "../../functions/attachmentLinkReaction.js";
 import { formatReasonWithMessageLinkForAttachments } from "../../functions/formatReasonForAttachments.js";
 import { ModActionsPluginType } from "../../types.js";
@@ -18,6 +19,10 @@ export async function actualUnmuteCmd(
   reason?: string | null,
 ) {
   if (await handleAttachmentLinkDetectionAndGetRestriction(pluginData, context, reason)) {
+    return;
+  }
+
+  if (!await confirmUnresolvedSnippets(pluginData.guild.id, reason, context, mod.id)) {
     return;
   }
 

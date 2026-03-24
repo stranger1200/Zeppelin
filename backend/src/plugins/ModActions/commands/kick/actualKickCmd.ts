@@ -10,6 +10,7 @@ import {
   renderUsername,
   resolveMember,
 } from "../../../../utils.js";
+import { confirmUnresolvedSnippets } from "../../../../utils/confirmUnresolvedSnippets.js";
 import { handleAttachmentLinkDetectionAndGetRestriction } from "../../functions/attachmentLinkReaction.js";
 import {
   formatReasonWithAttachments,
@@ -32,6 +33,10 @@ export async function actualKickCmd(
   clean?: boolean | null,
 ) {
   if (await handleAttachmentLinkDetectionAndGetRestriction(pluginData, context, reason)) {
+    return;
+  }
+
+  if (!await confirmUnresolvedSnippets(pluginData.guild.id, reason, context, author.id)) {
     return;
   }
 

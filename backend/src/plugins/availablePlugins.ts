@@ -9,6 +9,8 @@ import { BotControlPlugin } from "./BotControl/BotControlPlugin.js";
 import { botControlPluginDocs } from "./BotControl/docs.js";
 import { CasesPlugin } from "./Cases/CasesPlugin.js";
 import { casesPluginDocs } from "./Cases/docs.js";
+import { CaseSnippetsPlugin } from "./CaseSnippets/CaseSnippetsPlugin.js";
+import { caseSnippetsPluginDocs } from "./CaseSnippets/docs.js";
 import { CensorPlugin } from "./Censor/CensorPlugin.js";
 import { censorPluginDocs } from "./Censor/docs.js";
 import { CommonPlugin } from "./Common/CommonPlugin.js";
@@ -97,6 +99,10 @@ export const availableGuildPlugins: ZeppelinGuildPluginInfo[] = [
     plugin: CasesPlugin,
     docs: casesPluginDocs,
     autoload: true,
+  },
+  {
+    plugin: CaseSnippetsPlugin,
+    docs: caseSnippetsPluginDocs,
   },
   {
     plugin: CensorPlugin,

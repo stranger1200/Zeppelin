@@ -4,6 +4,7 @@ import { CaseTypes } from "../../../../data/CaseTypes.js";
 import { UnknownUser, renderUsername } from "../../../../utils.js";
 import { CasesPlugin } from "../../../Cases/CasesPlugin.js";
 import { LogsPlugin } from "../../../Logs/LogsPlugin.js";
+import { confirmUnresolvedSnippets } from "../../../../utils/confirmUnresolvedSnippets.js";
 import { handleAttachmentLinkDetectionAndGetRestriction } from "../../functions/attachmentLinkReaction.js";
 import { formatReasonWithMessageLinkForAttachments } from "../../functions/formatReasonForAttachments.js";
 import { ModActionsPluginType } from "../../types.js";
@@ -17,6 +18,10 @@ export async function actualNoteCmd(
   note: string,
 ) {
   if (await handleAttachmentLinkDetectionAndGetRestriction(pluginData, context, note)) {
+    return;
+  }
+
+  if (!await confirmUnresolvedSnippets(pluginData.guild.id, note, context, author.id)) {
     return;
   }
 

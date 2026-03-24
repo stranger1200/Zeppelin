@@ -4,6 +4,7 @@ import { CaseTypes } from "../../../../data/CaseTypes.js";
 import { UserNotificationMethod, renderUsername } from "../../../../utils.js";
 import { waitForButtonConfirm } from "../../../../utils/waitForInteraction.js";
 import { CasesPlugin } from "../../../Cases/CasesPlugin.js";
+import { confirmUnresolvedSnippets } from "../../../../utils/confirmUnresolvedSnippets.js";
 import { handleAttachmentLinkDetectionAndGetRestriction } from "../../functions/attachmentLinkReaction.js";
 import {
   formatReasonWithAttachments,
@@ -23,6 +24,10 @@ export async function actualWarnCmd(
   contactMethods?: UserNotificationMethod[],
 ) {
   if (await handleAttachmentLinkDetectionAndGetRestriction(pluginData, context, reason)) {
+    return;
+  }
+
+  if (!await confirmUnresolvedSnippets(pluginData.guild.id, reason, context, authorId)) {
     return;
   }
 

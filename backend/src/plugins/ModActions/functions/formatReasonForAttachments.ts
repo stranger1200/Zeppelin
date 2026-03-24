@@ -1,6 +1,7 @@
 import { Attachment, ChatInputCommandInteraction, Message } from "discord.js";
 import { GuildPluginData } from "vety";
 import { isContextMessage } from "../../../pluginUtils.js";
+import { resolveCaseSnippets } from "../../../utils/resolveCaseSnippets.js";
 import { ModActionsPluginType } from "../types.js";
 
 export async function formatReasonWithMessageLinkForAttachments(
@@ -9,6 +10,8 @@ export async function formatReasonWithMessageLinkForAttachments(
   context: Message | ChatInputCommandInteraction,
   attachments: Attachment[],
 ) {
+  reason = await resolveCaseSnippets(pluginData.guild.id, reason);
+
   if (isContextMessage(context)) {
     const allAttachments = [...new Set([...context.attachments.values(), ...attachments])];
 

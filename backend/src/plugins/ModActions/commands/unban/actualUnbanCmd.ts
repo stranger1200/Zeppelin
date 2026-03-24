@@ -6,6 +6,7 @@ import { clearExpiringTempban } from "../../../../data/loops/expiringTempbansLoo
 import { UnknownUser } from "../../../../utils.js";
 import { CasesPlugin } from "../../../Cases/CasesPlugin.js";
 import { LogsPlugin } from "../../../Logs/LogsPlugin.js";
+import { confirmUnresolvedSnippets } from "../../../../utils/confirmUnresolvedSnippets.js";
 import { handleAttachmentLinkDetectionAndGetRestriction } from "../../functions/attachmentLinkReaction.js";
 import { formatReasonWithMessageLinkForAttachments } from "../../functions/formatReasonForAttachments.js";
 import { ignoreEvent } from "../../functions/ignoreEvent.js";
@@ -21,6 +22,10 @@ export async function actualUnbanCmd(
   mod: GuildMember,
 ) {
   if (await handleAttachmentLinkDetectionAndGetRestriction(pluginData, context, reason)) {
+    return;
+  }
+
+  if (!await confirmUnresolvedSnippets(pluginData.guild.id, reason, context, authorId)) {
     return;
   }
 

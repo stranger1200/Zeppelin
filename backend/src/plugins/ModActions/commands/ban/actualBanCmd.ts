@@ -10,6 +10,7 @@ import { banLock } from "../../../../utils/lockNameHelpers.js";
 import { waitForButtonConfirm } from "../../../../utils/waitForInteraction.js";
 import { CasesPlugin } from "../../../Cases/CasesPlugin.js";
 import { LogsPlugin } from "../../../Logs/LogsPlugin.js";
+import { confirmUnresolvedSnippets } from "../../../../utils/confirmUnresolvedSnippets.js";
 import { handleAttachmentLinkDetectionAndGetRestriction } from "../../functions/attachmentLinkReaction.js";
 import { banUserId } from "../../functions/banUserId.js";
 import {
@@ -32,6 +33,10 @@ export async function actualBanCmd(
   deleteDays?: number,
 ) {
   if (await handleAttachmentLinkDetectionAndGetRestriction(pluginData, context, reason)) {
+    return;
+  }
+
+  if (!await confirmUnresolvedSnippets(pluginData.guild.id, reason, context, author.id)) {
     return;
   }
 

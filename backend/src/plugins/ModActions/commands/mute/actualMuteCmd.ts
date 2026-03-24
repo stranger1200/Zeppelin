@@ -12,6 +12,7 @@ import {
 } from "../../../../utils.js";
 import { MutesPlugin } from "../../../Mutes/MutesPlugin.js";
 import { MuteResult } from "../../../Mutes/types.js";
+import { confirmUnresolvedSnippets } from "../../../../utils/confirmUnresolvedSnippets.js";
 import { handleAttachmentLinkDetectionAndGetRestriction } from "../../functions/attachmentLinkReaction.js";
 import {
   formatReasonWithAttachments,
@@ -37,6 +38,11 @@ export async function actualMuteCmd(
   if (await handleAttachmentLinkDetectionAndGetRestriction(pluginData, context, reason)) {
     return;
   }
+
+  if (!await confirmUnresolvedSnippets(pluginData.guild.id, reason, context, mod.id)) {
+    return;
+  }
+
 
   const timeUntilUnmute = time && humanizeDuration(time);
   const formattedReason =

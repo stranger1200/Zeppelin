@@ -1280,9 +1280,10 @@ export async function resolveMember(
   }
 
   // We don't want to spam the API by trying to fetch unknown members again and again,
-  // so we cache the fact that they're "unknown" for a while
+  // so we cache the fact that they're "unknown" for a while.
+  // When fresh = true, bypass the cache since the caller is explicitly requesting a live lookup.
   const unknownKey = `${guild.id}-${userId}`;
-  if (unknownMembers.has(unknownKey)) {
+  if (unknownMembers.has(unknownKey) && !fresh) {
     return null;
   }
 

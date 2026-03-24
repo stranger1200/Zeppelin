@@ -42,7 +42,7 @@ export async function clearMute(
         if (mute.roles_to_restore) {
           const guildRoles = pluginData.guild.roles.cache;
           for (const roleIdToRestore of mute?.roles_to_restore ?? []) {
-            if (guildRoles.has(roleIdToRestore) && roleIdToRestore !== muteRoleId) {
+            if (guildRoles.has(roleIdToRestore) && roleIdToRestore !== muteRoleId && roleIdToRestore !== pluginData.guild.id) {
               roleManagerPlugin.addRole(member.id, roleIdToRestore);
             }
           }

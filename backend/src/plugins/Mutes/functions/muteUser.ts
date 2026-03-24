@@ -67,7 +67,8 @@ export async function muteUser(
   let rolesToRestore: string[] = [];
   if (member) {
     // remove and store any roles to be removed/restored
-    const currentUserRoles = [...member.roles.cache.keys()];
+    // The @everyone role (ID = guild ID) is always present in member.roles.cache but cannot be assigned or removed, so exclude it
+    const currentUserRoles = [...member.roles.cache.keys()].filter((id) => id !== pluginData.guild.id);
     let newRoles: string[] = currentUserRoles;
     const removeRoles = removeRolesOnMuteOverride ?? config.remove_roles_on_mute;
     const restoreRoles = restoreRolesOnMuteOverride ?? config.restore_roles_on_mute;
@@ -93,6 +94,7 @@ export async function muteUser(
     } else {
       rolesToRestore = currentUserRoles.filter((x) => (<string[]>restoreRoles).includes(x));
     }
+
 
     if (muteType === MuteTypes.Role) {
       // Verify the configured mute role is valid
